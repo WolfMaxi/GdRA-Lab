@@ -1,0 +1,19 @@
+[libraries]
+
+lib.files = [
+"CodingConvention.vhdl",
+"packages/constant_package.vhdl",
+"testbenches/register/PipelineRegister_tb.vhdl",
+"testbenches/multiplexer/gen_mux_tb.vhdl",
+"testbenches/alu/my_alu_tb.vhdl",
+"components/register/PipelineRegister.vhdl",
+"components/multiplexer/gen_mux.vhdl",
+"components/alu/my_shifter.vhdl",
+"components/alu/my_half_adder.vhdl",
+"components/alu/my_gen_xor.vhdl",
+"components/alu/my_gen_or.vhdl",
+"components/alu/my_gen_n_bit_full_adder.vhdl",
+"components/alu/my_gen_and.vhdl",
+"components/alu/my_full_adder.vhdl",
+"components/alu/my_alu.vhdl",
+]
