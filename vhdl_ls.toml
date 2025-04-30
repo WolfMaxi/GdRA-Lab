@@ -5,10 +5,9 @@ lib.files = [
 "packages\\constant_package.vhdl",
 "packages\\type_packages.vhdl",
 "testbenches\\register\\PipelineRegister_tb.vhdl",
-"testbenches\\register\\register_file_tb.vhdl",
 "testbenches\\alu\\my_alu_tb.vhdl",
 "testbenches\\multiplexer\\gen_mux_tb.vhdl",
-"components\\register\\register_file.vhdl",
+"testbenches\\registerfile\\register_file_tb.vhdl",
 "components\\register\\PipelineRegister.vhdl",
 "components\\alu\\my_gen_xor.vhdl",
 "components\\alu\\my_alu.vhdl",
@@ -19,4 +18,5 @@ lib.files = [
 "components\\alu\\my_full_adder.vhdl",
 "components\\alu\\my_gen_and.vhdl",
 "components\\multiplexer\\gen_mux.vhdl",
+"components\\registerfile\\register_file.vhdl",
 ]
