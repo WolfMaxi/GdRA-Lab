@@ -19,4 +19,6 @@ lib.files = [
 "components\\alu\\my_gen_and.vhdl",
 "components\\multiplexer\\gen_mux.vhdl",
 "components\\registerfile\\register_file.vhdl",
+"components\\registerfile\\constant_package.vhdl",
+"components\\registerfile\\type_packages.vhdl",
 ]
