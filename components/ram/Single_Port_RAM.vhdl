@@ -21,19 +21,17 @@ end entity Single_Port_RAM;
 architecture behavior of Single_Port_RAM is
     signal regs: memory := (others => (others => '0'));
 begin
-    process(pi_clk)
+    process(pi_clk, pi_rst)
     begin
-        if rising_edge(pi_clk) then
-            if pi_rst then
-                -- Reset all regs
-                regs <= (others => (others => '0'));
-                po_data <= (others => '0');
-            else
-                -- Set output to value of current address
-                po_data <= regs(to_integer(unsigned(pi_addr)));
-                if pi_we then
-                    regs(to_integer(unsigned(pi_addr))) <= pi_data;
-                end if;
+        if pi_rst then
+            -- Reset all words
+            regs <= (others => (others => '0'));
+            po_data <= (others => '0'); 
+        elsif rising_edge(pi_clk) then
+            -- Set output to value of current address
+            po_data <= regs(to_integer(unsigned(pi_addr)));
+            if pi_we then
+                regs(to_integer(unsigned(pi_addr))) <= pi_data;
             end if;
         end if;
     end process;
