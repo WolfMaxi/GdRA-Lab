@@ -77,7 +77,7 @@ begin
             pi_readRegAddr1 => si_readRegAddr1_32,
             pi_readRegAddr2 => si_readRegAddr2_32,
             pi_writeRegAddr => si_writeRegAddr32,
-            pi_writeRegData => si_writeRegData32(31 downto 0),
+            pi_writeRegData => si_writeRegData32,
             pi_writeEnable => si_writeEnable32,
             po_readRegData1 => so_readRegData1_32,
             po_readRegData2 => so_readRegData2_32
