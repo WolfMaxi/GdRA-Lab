@@ -4,8 +4,7 @@
 -- Lab Date: 29.04.2025
 -- 1. Participant First and  Last Name: Maximilian Wolf
 -- 2. Participant First and Last Name: Esad-Muhammed Cekmeci
- 
- 
+
 -- coding conventions
 -- g_<name> Generics
 -- p_<name> Ports
