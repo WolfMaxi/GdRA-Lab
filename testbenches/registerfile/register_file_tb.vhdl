@@ -15,6 +15,8 @@ entity register_file_tb is
 end entity register_file_tb;
 
 architecture behavior of register_file_tb is
+    
+    constant last_index: integer := 2**REG_ADR_WIDTH - 1;
 
     signal s_clk, s_rst: STD_LOGIC := '0';
 
@@ -119,7 +121,22 @@ begin
             report "Data1 Error with 32-Bit" severity error;
         assert so_readRegData2_32 = s_rst32
             report "Data2 Error with 32-Bit" severity error;
-        
+
+        --Test ob das leztze register beschrieben wird
+        si_writeEnable32  <= '1';
+        si_writeRegAddr32 <= std_logic_vector(to_unsigned(last_index, REG_ADR_WIDTH));
+        si_writeRegData32 <= s_expected1_32;
+        wait for period;
+        si_writeEnable32  <= '0';
+
+        si_readRegAddr1_32 <= std_logic_vector(to_unsigned(last_index, REG_ADR_WIDTH));
+        si_readRegAddr2_32 <= std_logic_vector(to_unsigned(last_index, REG_ADR_WIDTH));
+        wait for period;
+        assert so_readRegData1_32 = s_expected1_32
+            report "Data1 Error im letzten Register" severity error;
+        assert so_readRegData2_32 = s_expected1_32
+            report "Data2 Error im letzten Register" severity error;
+            
         --Test des Reset
         s_rst <= '1';
         wait for period;

@@ -15,7 +15,8 @@ library ieee;
 entity register_file is
     generic(
         word_width  : integer := WORD_WIDTH;
-        adr_width   : integer := REG_ADR_WIDTH
+        adr_width   : integer := REG_ADR_WIDTH;
+        reg_amount  : integer := 2**REG_ADR_WIDTH
     );
     port(
         pi_clk, pi_rst  : in STD_LOGIC;
@@ -51,12 +52,10 @@ end entity register_file;
 --            end if;
 --        end if;
 --    end process;
---end architecture behavior;
-
---Asynchroner Reset um den labor tutor vor zu beugen, der pisser 
+--end architecture behavior; 
 
 architecture behavior of register_file is
-type reg_array is array (0 to 2**REG_ADR_WIDTH-1) of std_logic_vector(word_width-1 downto 0); --konnte es mit registermemory aus type_package nicht zum laufen bringenb
+type reg_array is array (0 to reg_amount-1) of std_logic_vector(word_width-1 downto 0); --konnte es mit registermemory aus type_package nicht zum laufen bringenb
 signal s_array : reg_array := (others => (others => '0'));
 
 begin
