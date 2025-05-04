@@ -20,17 +20,15 @@ use ieee.math_real.all;
 
 entity Single_Port_RAM_tb is
     generic (
-        dataWidth: integer := 32;
-        addrWidth: integer := 8  
+        word_width: integer := 32;
+        adr_width: integer := 10  
     );
 end entity Single_Port_RAM_tb;
 
 architecture behavior of Single_Port_RAM_tb is
     signal s_clk, s_rst, s_we: STD_LOGIC := '0';
-    signal s_addr: STD_LOGIC_VECTOR(addrWidth - 1 downto 0);
-    signal s_inData, s_outData: STD_LOGIC_VECTOR(dataWidth - 1 downto 0);
-
-    signal s_expected: STD_LOGIC_VECTOR(dataWidth - 1 downto 0);
+    signal s_addr: STD_LOGIC_VECTOR(adr_width - 1 downto 0);
+    signal s_inData, s_outData, s_expected: STD_LOGIC_VECTOR(word_width - 1 downto 0);
 
     constant clock_period: time := 10 ns;
     constant period: time := 20 ns;
@@ -45,8 +43,8 @@ begin
 
     DUT: entity work.Single_Port_RAM
         generic map (
-            dataWidth => 32,
-            addrWidth => 8
+            word_width => word_width,
+            adr_width => adr_width
         )
         port map (
             pi_clk  => s_clk,
@@ -62,17 +60,17 @@ begin
     begin
         -- Write test
         s_we <= '1';
-        for i in 0 to addrWidth - 1 loop
-            s_inData <= STD_LOGIC_VECTOR(to_unsigned(i, dataWidth));
-            s_addr <= STD_LOGIC_VECTOR(to_unsigned(i, addrWidth));
+        for i in 0 to adr_width - 1 loop
+            s_inData <= STD_LOGIC_VECTOR(to_unsigned(i, word_width));
+            s_addr <= STD_LOGIC_VECTOR(to_unsigned(i, adr_width));
             wait for period;
         end loop;
         
         -- Read test
         s_we <= '0';
-        for i in 0 to addrWidth - 1 loop
-            s_addr <= STD_LOGIC_VECTOR(to_unsigned(i, addrWidth));
-            s_expected <= STD_LOGIC_VECTOR(to_unsigned(i, dataWidth));
+        for i in 0 to adr_width - 1 loop
+            s_addr <= STD_LOGIC_VECTOR(to_unsigned(i, adr_width));
+            s_expected <= STD_LOGIC_VECTOR(to_unsigned(i, word_width));
             wait for period;
             assert (s_outData = s_expected) report "Read Error in Register " & integer'image(i);
         end loop;
@@ -82,8 +80,8 @@ begin
         wait for period;
 
         s_expected <= (others => '0');
-        for i in 0 to addrWidth - 1 loop
-            s_addr <= STD_LOGIC_VECTOR(to_unsigned(i, addrWidth));
+        for i in 0 to adr_width - 1 loop
+            s_addr <= STD_LOGIC_VECTOR(to_unsigned(i, adr_width));
             wait for period;
             assert (s_outData = s_expected) report "Reset Error in Register " & integer'image(i);
         end loop;

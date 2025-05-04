@@ -3,22 +3,22 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 use work.constant_package.all;
-use work.types_package.all;
 
 entity Single_Port_RAM is
     generic (
-        dataWidth: integer := WORD_WIDTH;
-        addrWidth: integer := ADR_WIDTH
+        word_width: integer := 32;
+        adr_width: integer := 10
     );
     port (
         pi_clk, pi_rst, pi_we: in STD_LOGIC := '0';
-        pi_addr: in STD_LOGIC_VECTOR(addrWidth - 1 downto 0) := (others => '0');
-        pi_data: in STD_LOGIC_VECTOR(dataWidth - 1 downto 0) := (others => '0');
-        po_data: out STD_LOGIC_VECTOR(dataWidth - 1 downto 0) := (others => '0')
+        pi_addr: in STD_LOGIC_VECTOR(adr_width - 1 downto 0) := (others => '0');
+        pi_data: in STD_LOGIC_VECTOR(word_width - 1 downto 0) := (others => '0');
+        po_data: out STD_LOGIC_VECTOR(word_width - 1 downto 0) := (others => '0')
     );
 end entity Single_Port_RAM;
 
 architecture behavior of Single_Port_RAM is
+    type memory is array (0 to 2 ** adr_width - 1) of std_logic_vector(word_width - 1 downto 0);
     signal regs: memory := (others => (others => '0'));
 begin
     process(pi_clk, pi_rst)
