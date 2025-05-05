@@ -1,9 +1,9 @@
 -- Laboratory RA solutions/versuch2
 -- Sommersemester 25
 -- Group Details
--- Lab Date:
--- 1. Participant First and Last Name: 
--- 2. Participant First and Last Name:
+-- Lab Date:06.05.25
+-- 1. Participant First and  Last Name: Maximilian Wolf
+-- 2. Participant First and Last Name: Esad-Muhammed Cekmeci
 
 library ieee;
   use ieee.std_logic_1164.all;

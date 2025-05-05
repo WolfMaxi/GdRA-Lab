@@ -1,7 +1,7 @@
--- Laboratory RA solutions/versuch1
--- Sommer Semester 25
+-- Laboratory RA solutions/versuch2
+-- Sommersemester 25
 -- Group Details
--- Lab Date: 29.04.2025
+-- Lab Date:06.05.25
 -- 1. Participant First and  Last Name: Maximilian Wolf
 -- 2. Participant First and Last Name: Esad-Muhammed Cekmeci
  
