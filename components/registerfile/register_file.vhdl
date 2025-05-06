@@ -30,46 +30,22 @@ entity register_file is
     );  
 end entity register_file;
 
---architecture behavior of register_file is
---type reg_array is array (0 to 2**REG_ADR_WIDTH-1) of std_logic_vector(word_width-1 downto 0); --konnte es mit registermemory aus type_package nicht zum laufen bringenb
---signal s_array : reg_array := (others => (others => '0'));
-
---begin
---    process(pi_clk)
---    begin
---        if rising_edge(pi_clk) then 
---            if pi_rst = '1' then
---                s_array         <= (others =>(others => '0'));
---                po_readRegData1 <= (others => '0'); 
---                po_readRegData2 <= (others => '0');
---            else 
---                po_readRegData1 <= s_array(to_integer(unsigned(pi_readRegAddr1)));
---                po_readRegData2 <= s_array(to_integer(unsigned(pi_readRegAddr2)));
---        
---                if pi_writeEnable = '1' and to_integer(unsigned(pi_writeRegAddr)) /= 0 then
---                    s_array(to_integer(unsigned(pi_writeRegAddr))) <= pi_writeRegData;
---                end if;
---            end if;
---        end if;
---    end process;
---end architecture behavior; 
-
 architecture behavior of register_file is
 type reg_array is array (0 to reg_amount-1) of std_logic_vector(word_width-1 downto 0); --konnte es mit registermemory aus type_package nicht zum laufen bringenb
-signal s_array : reg_array := (others => (others => '0'));
+signal s_array : reg_array := (others => (others => '0')); --0te register wird beim start auf 0 gesetzt
 
 begin
-    process(pi_clk, pi_rst)
+    process(pi_clk)
     begin
-        if pi_rst = '1' then
+        if pi_rst = '1' then -- Reset signal
             s_array         <= (others => (others => '0'));
             po_readRegData1 <= (others => '0');
             po_readRegData2 <= (others => '0');
-        elsif rising_edge(pi_clk) then
+        elsif rising_edge(pi_clk) then --Lesen und Schreiben bei steigender Flanke
             po_readRegData1 <= s_array(to_integer(unsigned(pi_readRegAddr1)));
             po_readRegData2 <= s_array(to_integer(unsigned(pi_readRegAddr2)));
 
-            if pi_writeEnable = '1' and to_integer(unsigned(pi_writeRegAddr)) /= 0 then
+            if pi_writeEnable = '1' and to_integer(unsigned(pi_writeRegAddr)) /= 0 then --Schreibnur wenn pi_writeEnable = 1 und pi_writeRegAddr != 0
                 s_array(to_integer(unsigned(pi_writeRegAddr))) <= pi_writeRegData;
             end if;
         end if;

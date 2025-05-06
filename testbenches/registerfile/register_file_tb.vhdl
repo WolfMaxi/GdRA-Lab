@@ -14,8 +14,9 @@ library ieee;
 entity register_file_tb is
 end entity register_file_tb;
 
-architecture behavior of register_file_tb is    
-    constant last_index: integer := 2**REG_ADR_WIDTH - 1;
+architecture behavior of register_file_tb is
+    constant FIRST_INDEX: integer := 0;
+    constant LAST_INDEX: integer := 2**REG_ADR_WIDTH - 1;
 
     signal s_clk, s_rst: STD_LOGIC := '0';
 
@@ -41,11 +42,11 @@ architecture behavior of register_file_tb is
     --signal s_expected2_32: std_logic_vector(31 downto 0) := "11110101000101101011000000000110";
 
 
-    signal s_rst16: STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+    signal s_rst16: STD_LOGIC_VECTOR(15 downto 0) := (others => '0'); --Für die übersichtlichkeit, an sich nicht nötig 
     signal s_rst32: STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-    constant clock_period: time := 10 ns;
-    constant period: time := 20 ns;
+    constant CLOCK_PERIOD : time := 10 ns;
+    constant PERIOD: time := 20 ns;
 
 begin 
     DUT16: entity work.register_file(behavior)
@@ -84,9 +85,9 @@ begin
     clock: process
     begin
         s_clk <= '0';
-        wait for clock_period / 2;
+        wait for CLOCK_PERIOD / 2;
         s_clk <= '1';
-        wait for clock_period / 2;
+        wait for CLOCK_PERIOD / 2;
     end process;
 
     stimulus: process is 
@@ -95,12 +96,12 @@ begin
         si_writeEnable16  <= '1';
         si_writeRegAddr16 <= std_logic_vector(to_unsigned(3, REG_ADR_WIDTH));
         si_writeRegData16 <= s_expected1_16;
-        wait for period;  
+        wait for PERIOD;  
         si_writeEnable16  <= '0'; 
 
         si_readRegAddr1_16 <= std_logic_vector(to_unsigned(3, REG_ADR_WIDTH));
         si_readRegAddr2_16 <= std_logic_vector(to_unsigned(4, REG_ADR_WIDTH));
-        wait for period;
+        wait for PERIOD;
         assert so_readRegData1_16 = s_expected1_16
             report "Data1 Error with 16-Bit" severity error;
         assert so_readRegData2_16 = s_rst16
@@ -110,12 +111,12 @@ begin
         si_writeEnable32  <= '1';
         si_writeRegAddr32 <= std_logic_vector(to_unsigned(5, REG_ADR_WIDTH));
         si_writeRegData32 <= s_expected1_32;
-        wait for period;  
+        wait for PERIOD;  
         si_writeEnable32  <= '0'; 
 
         si_readRegAddr1_32 <= std_logic_vector(to_unsigned(5, REG_ADR_WIDTH));
         si_readRegAddr2_32 <= std_logic_vector(to_unsigned(0, REG_ADR_WIDTH));
-        wait for period;
+        wait for PERIOD;
         assert so_readRegData1_32 = s_expected1_32
             report "Data1 Error with 32-Bit" severity error;
         assert so_readRegData2_32 = s_rst32
@@ -123,24 +124,29 @@ begin
 
         --Test ob das leztze register beschrieben wird
         si_writeEnable32  <= '1';
-        si_writeRegAddr32 <= std_logic_vector(to_unsigned(last_index, REG_ADR_WIDTH));
+        si_writeRegAddr32 <= std_logic_vector(to_unsigned(LAST_INDEX, REG_ADR_WIDTH));
         si_writeRegData32 <= s_expected1_32;
-        wait for period;
+        wait for PERIOD;
         si_writeEnable32  <= '0';
 
-        si_readRegAddr1_32 <= std_logic_vector(to_unsigned(last_index, REG_ADR_WIDTH));
-        si_readRegAddr2_32 <= std_logic_vector(to_unsigned(last_index, REG_ADR_WIDTH));
-        wait for period;
+        si_readRegAddr1_32 <= std_logic_vector(to_unsigned(LAST_INDEX, REG_ADR_WIDTH));
+        si_readRegAddr2_32 <= std_logic_vector(to_unsigned(LAST_INDEX, REG_ADR_WIDTH));
+        wait for PERIOD;
         assert so_readRegData1_32 = s_expected1_32
             report "Data1 Error im letzten Register" severity error;
         assert so_readRegData2_32 = s_expected1_32
             report "Data2 Error im letzten Register" severity error;
+        --Test ob das erste register beschrieben wird
+        si_writeEnable32  <= '1';
+        si_writeRegAddr32 <= std_logic_vector(to_unsigned(FIRST_INDEX, REG_ADR_WIDTH));
+        si_writeRegData32 <= s_expected1_32;
+        wait for PERIOD;
             
         --Test des Reset
         s_rst <= '1';
-        wait for period;
+        wait for PERIOD;
         s_rst <= '0';
-        wait for period;
+        wait for PERIOD;
 
         assert so_readRegData1_16 = s_rst16
             report "Reset1 Error for 16-Bit" severity error;

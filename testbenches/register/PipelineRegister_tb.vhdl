@@ -87,6 +87,7 @@ begin
         assert (so_data16 = s_rst16) report "Reset Error in Register 16";
         assert (so_data32 = s_rst32) report "Reset Error in Register 32";
 
+        report "End of Test!!!" severity note;
         wait;
     end process;
 end behavior;
