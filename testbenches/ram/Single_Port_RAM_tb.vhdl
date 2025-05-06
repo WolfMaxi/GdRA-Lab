@@ -17,11 +17,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
+use work.constant_package.all;
 
 entity Single_Port_RAM_tb is
     generic (
-        word_width: integer := 32;
-        adr_width: integer := 10  
+        word_width: integer := WORD_WIDTH;
+        adr_width: integer := REG_ADR_WIDTH  
     );
 end entity Single_Port_RAM_tb;
 

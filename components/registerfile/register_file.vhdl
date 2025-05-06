@@ -58,9 +58,8 @@ architecture behavior of register_file is
 type reg_array is array (0 to reg_amount-1) of std_logic_vector(word_width-1 downto 0); --konnte es mit registermemory aus type_package nicht zum laufen bringenb
 signal s_array : reg_array := (others => (others => '0')); --0te register wird beim start auf 0 gesetzt
 
-
 begin
-    process(pi_clk, pi_rst)
+    process(pi_clk)
     begin
         if pi_rst = '1' then -- Reset signal
             s_array         <= (others => (others => '0'));
