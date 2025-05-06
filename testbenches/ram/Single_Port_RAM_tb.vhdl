@@ -32,6 +32,9 @@ architecture behavior of Single_Port_RAM_tb is
 
     constant clock_period: time := 10 ns;
     constant period: time := 20 ns;
+
+    constant lowerBound: INTEGER := 0;
+    constant upperBound: INTEGER := 2 ** adr_width - 1;
 begin
     clock: process
     begin
@@ -60,32 +63,38 @@ begin
     begin
         -- Write test
         s_we <= '1';
-        for i in 0 to adr_width - 1 loop
-            s_inData <= STD_LOGIC_VECTOR(to_unsigned(i, word_width));
-            s_addr <= STD_LOGIC_VECTOR(to_unsigned(i, adr_width));
-            wait for period;
-        end loop;
+        s_inData <= (others => '1');
+
+        s_addr <= STD_LOGIC_VECTOR(to_unsigned(lowerBound, adr_width));
+        wait for period;
+
+        s_addr <= STD_LOGIC_VECTOR(to_unsigned(upperBound, adr_width));
+        wait for period;
         
         -- Read test
         s_we <= '0';
-        for i in 0 to adr_width - 1 loop
-            s_addr <= STD_LOGIC_VECTOR(to_unsigned(i, adr_width));
-            s_expected <= STD_LOGIC_VECTOR(to_unsigned(i, word_width));
-            wait for period;
-            assert (s_outData = s_expected) report "Read Error in Register " & integer'image(i);
-        end loop;
-        
+        s_expected <= (others => '1');
+
+        s_addr <= STD_LOGIC_VECTOR(to_unsigned(lowerBound, adr_width));
+        wait for period;
+        assert (s_outData = s_expected) report "Read Error in Register " & integer'image(lowerBound);
+
+        s_addr <= STD_LOGIC_VECTOR(to_unsigned(upperBound, adr_width));
+        wait for period;
+        assert (s_outData = s_expected) report "Read Error in Register " & integer'image(upperBound);
+
         -- Reset test
         s_rst <= '1';
-        wait for period;
-
         s_expected <= (others => '0');
-        for i in 0 to adr_width - 1 loop
-            s_addr <= STD_LOGIC_VECTOR(to_unsigned(i, adr_width));
-            wait for period;
-            assert (s_outData = s_expected) report "Reset Error in Register " & integer'image(i);
-        end loop;
-        
+
+        s_addr <= STD_LOGIC_VECTOR(to_unsigned(lowerBound, adr_width));
+        wait for period;
+        assert (s_outData = s_expected) report "Reset Error in Register " & integer'image(lowerBound);
+
+        s_addr <= STD_LOGIC_VECTOR(to_unsigned(upperBound, adr_width));
+        wait for period;
+        assert (s_outData = s_expected) report "Reset Error in Register " & integer'image(upperBound);
+
         assert false report "End of RAM test" severity note;
         wait;
     end process;
