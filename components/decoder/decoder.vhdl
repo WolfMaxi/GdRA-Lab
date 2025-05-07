@@ -18,12 +18,17 @@ entity decoder is
     );
     port (
         pi_clk: in STD_LOGIC := '0';
-        pi_instruction: in STD_LOGIC_VECTOR(word_width - 1 downto 0) := (others => '0')
+        pi_instruction: in STD_LOGIC_VECTOR(word_width - 1 downto 0) := (others => '0');
+        po_controlWord: out controlword := control_word_init
     );
     -- end solution!!
 end entity decoder;
 architecture arc of decoder is
 begin
     -- begin solution:
+    process (pi_clk)
+    begin
+
+    end process;
     -- end solution!!
 end architecture;
