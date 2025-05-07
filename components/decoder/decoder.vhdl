@@ -13,9 +13,17 @@ use work.types.all;
 
 entity decoder is
     -- begin solution:
+    generic (
+        word_width: integer := WORD_WIDTH
+    );
+    port (
+        pi_clk: in STD_LOGIC := '0';
+        pi_instruction: in STD_LOGIC_VECTOR(word_width - 1 downto 0) := (others => '0')
+    );
     -- end solution!!
 end entity decoder;
 architecture arc of decoder is
+begin
     -- begin solution:
     -- end solution!!
 end architecture;
