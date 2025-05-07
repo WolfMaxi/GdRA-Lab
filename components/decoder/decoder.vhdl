@@ -14,12 +14,12 @@ use work.types.all;
 entity decoder is
     -- begin solution:
     generic (
-        word_width: integer := WORD_WIDTH
+        word_width : integer := WORD_WIDTH
     );
     port (
-        pi_clk: in STD_LOGIC := '0';
-        pi_instruction: in STD_LOGIC_VECTOR(word_width - 1 downto 0) := (others => '0');
-        po_controlWord: out controlword := control_word_init
+        pi_clk : in std_logic := '0';
+        pi_instruction : in std_logic_vector(word_width - 1 downto 0) := (others => '0');
+        po_controlWord : out controlword := control_word_init
     );
     -- end solution!!
 end entity decoder;
@@ -27,8 +27,28 @@ architecture arc of decoder is
 begin
     -- begin solution:
     process (pi_clk)
-    begin
+        variable v_insFormat : t_instruction_type;
 
+        variable v_opcode : std_logic_vector(6 downto 0) := (others => '0');
+        variable v_func7 : std_logic_vector(6 downto 0) := (others => '0');
+        variable v_func3 : std_logic_vector(2 downto 0) := (others => '0');
+    begin
+        if rising_edge(pi_clk) then
+            v_opcode := pi_instruction(6 downto 0);
+            case v_opcode is
+                when R_INS_OP => v_insFormat := rFormat;
+                when others => v_insFormat := nullFormat;
+            end case;
+            case v_insFormat is
+                when rFormat =>
+                    v_func7 := pi_instruction(31 downto 25);
+                    v_func3 := pi_instruction(14 downto 12);
+                    po_controlWord.ALU_OP <= v_func7(5) & v_func3; 
+                    po_controlWord.I_IMM_SEL <= '0';
+                when others =>
+                    po_controlWord <= control_word_init;
+            end case;
+        end if;
     end process;
     -- end solution!!
 end architecture;
