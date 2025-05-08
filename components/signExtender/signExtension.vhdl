@@ -34,26 +34,31 @@ end entity signExtension;
 
 architecture arc of signExtension is
 -- begin solution:
-    signal s_jumpImm : std_logic_vector(11 downto 0) := (others => '0');
-    signal s_branchImm : std_logic_vector(11 downto 0) := (others => '0');
-    signal s_immediateImm : std_logic_vector(12 downto 0) := (others => '0');
-    signal s_storeImm : std_logic_vector(20 downto 0) := (others => '0');
+    --signal s_jumpImm : std_logic_vector(20 downto 0) := (others => '0');
+    --signal s_branchImm : std_logic_vector(12 downto 0) := (others => '0');
+    --signal s_immediateImm : std_logic_vector(11 downto 0) := (others => '0');
+    --signal s_storeImm : std_logic_vector(11 downto 0) := (others => '0');
 
     begin
         process(pi_instr)
+
+            variable v_immediateImm : signed (11 downto 0) := (others => '0');
+            variable v_storeImm : signed (11 downto 0) := (others => '0');
+            variable v_branchImm : signed (12 downto 0) := (others => '0');
+            variable v_jumpImm : signed (20 downto 0) := (others => '0');
+
         begin
-            s_immediateImm <= pi_instr(31 downto 20);
+            v_immediateImm := signed(pi_instr(31 downto 20));
+            po_immediateImm <= std_logic_vector(resize(v_immediateImm, word_width));
 
-            s_storeImm <= pi_instr(31 downto 25) & pi_instr(11 downto 7);
+            v_storeImm := signed(pi_instr(31 downto 25) & pi_instr(11 downto 7));
+            po_storeImm     <= std_logic_vector(resize(v_storeImm, word_width));
 
-            s_branchImm <= pi_instr(31) & pi_instr(7) & pi_instr(30 downto 25) & pi_instr(11 downto 8) & '0';
+            v_branchImm := signed(pi_instr(31) & pi_instr(7) & pi_instr(30 downto 25) & pi_instr(11 downto 8) & '0');
+            po_branchImm    <= std_logic_vector(resize(v_branchImm, word_width));
 
-            s_jumpImm <= pi_instr(31) & pi_instr(19 downto 12) & pi_instr(20) & pi_instr(30 downto 21) & '0' ;
-
-            po_immediateImm <= std_logic_vector(resize(signed(s_immediateImm), word_width));
-            po_storeImm     <= std_logic_vector(resize(signed(s_storeImm), word_width));
-            po_branchImm    <= std_logic_vector(resize(signed(s_branchImm), word_width));
-            po_jumpImm      <= std_logic_vector(resize(signed(s_jumpImm), word_width));
+            v_jumpImm := signed(pi_instr(31) & pi_instr(19 downto 12) & pi_instr(20) & pi_instr(30 downto 21) & '0');
+            po_jumpImm      <= std_logic_vector(resize(v_jumpImm, word_width));
 
             po_unsignedImm <= pi_instr(word_width - 1 downto 12) & (11 downto 0 => '0');
         end process;
