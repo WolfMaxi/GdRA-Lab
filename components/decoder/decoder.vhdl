@@ -37,6 +37,11 @@ begin
             v_opcode := pi_instruction(6 downto 0);
             case v_opcode is
                 when R_INS_OP => v_insFormat := rFormat;
+                when JALR_INS_OP | L_INS_OP | I_INS_OP => v_insFormat := iFormat;
+                when S_INS_OP => v_insFormat := sFormat;
+                when B_INS_OP => v_insFormat := bFormat;
+                when LUI_INS_OP | AUIPC_INS_OP => v_insFormat := uFormat;
+                when JAL_INS_OP => v_insFormat := jFormat;
                 when others => v_insFormat := nullFormat;
             end case;
             case v_insFormat is
