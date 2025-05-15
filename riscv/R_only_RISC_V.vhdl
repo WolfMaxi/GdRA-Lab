@@ -18,6 +18,13 @@ use ieee.numeric_std.all;
 use work.constant_package.all;
 use work.types.all;
 
+use work.my_gen_n_bit_full_adder;
+use work.PipelineRegister;
+use work.instruction_cache;
+use work.ControlWordRegister;
+use work.decoder;
+use work.my_alu;
+
 entity r_only_RISC_V is
   port (
     pi_rst : in std_logic;
@@ -33,11 +40,15 @@ architecture structure of r_only_RISC_V is
   constant ADD_FOUR_TO_ADDRESS : std_logic_vector(WORD_WIDTH - 1 downto 0) := std_logic_vector(to_signed((4), WORD_WIDTH));
   -- signals
   -- begin solution:
-  signal s_pc_currentAddr: std_logic_vector(WORD_WIDTH - 1 downto 0); -- Current adress instruction in pc
-  signal s_pc_newAddr: std_logic_vector(WORD_WIDTH - 1 downto 0); -- New address for next instruction in pc
-  signal s_instruction: std_logic_vector(WORD_WIDTH - 1 downto 0);
-  signal s_id_controlword, s_ex_controlword, s_mem_controlword, s_wb_controlword: controlword;
-  signal s_id_regAddr, s_ex_regAddr, s_mem_regAddr, s_wb_regAddr: std_logic_vector(REG_ADR_WIDTH - 1 downto 0);
+  -- =============== PC ===============
+  signal s_pc_currentAddr, s_pc_newAddr: std_logic_vector(WORD_WIDTH - 1 downto 0); -- Current and new adress instruction in pc
+  signal s_currentInst, s_newInst: std_logic_vector(WORD_WIDTH - 1 downto 0); -- Current and new instruction in IF phase
+  -- ============ Pipeline ============
+  signal s_id_controlword, s_ex_controlword, s_wb_controlword: controlword;
+  signal s_ex_dstAddr, s_wb_dstAddr: std_logic_vector(REG_ADR_WIDTH - 1 downto 0);
+  -- ============ Execute =============
+  signal s_alu_newOP1, s_alu_newOP2, s_alu_currentOP1, s_alu_currentOP2: std_logic_vector(WORD_WIDTH - 1 downto 0);
+  signal s_alu_newOut, s_alu_currentOut, s_alu_wb: std_logic_vector(WORD_WIDTH - 1 downto 0);
   -- end solution!!
 begin
 
@@ -74,36 +85,45 @@ begin
   ---********************************************************************
   -- begin solution:  
   INSTRUCTION_CACHE: entity work.instruction_cache(behavior)
-  generic map (
-    adr_width => ADR_WIDTH,
-    mem_size => 2 ** 10
-  )
-  port map (
-    pi_adr => s_pc_currentAddr,
-    pi_clk => pi_clk,
-    pi_instructionCache => pi_instruction,
-    po_instruction => s_instruction
-  );
+    generic map (
+      adr_width => ADR_WIDTH,
+      mem_size => 2 ** 10
+    )
+    port map (
+      pi_adr => s_pc_currentAddr,
+      pi_clk => pi_clk,
+      pi_instructionCache => pi_instruction,
+      po_instruction => s_newInst
+    );
   -- end solution!!
 
   ---********************************************************************
   ---* Pipeline-Register (IF -> ID) start
   ---********************************************************************
-
   -- begin solution:
+  IF_PIPELINE: entity work.PipelineRegister(behavior)
+    generic map (
+      registerWidth => WORD_WIDTH
+    )
+    port map (
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_newInst,
+      po_data => s_currentInst
+    );
   -- end solution!!
 
   ---********************************************************************
   ---* decode phase
   ---********************************************************************
   -- begin solution:
-  INSTRUCTION_DECODER: entity work.decoder
+  INSTRUCTION_DECODER: entity work.decoder(arc)
     generic map (
       word_width => WORD_WIDTH
     )
     port map (
       pi_clk => pi_clk,
-      pi_instruction => s_instruction,
+      pi_instruction => s_currentInst,
       po_controlWord => s_id_controlword
     );
   -- end solution!!
@@ -112,12 +132,63 @@ begin
   ---* Pipeline-Register (ID -> EX) 
   ---********************************************************************
   -- begin solution: 
+  EX_CONTROLWORD: entity work.ControlWordRegister(arc1)
+    port map (
+      pi_rst => pi_rst,
+      pi_clk => pi_clk,
+      pi_controlWord => s_id_controlword,
+      po_controlWord => s_ex_controlword
+    );
+  EX_PIPELINE: entity work.PipelineRegister(behavior)
+    generic map (
+      registerWidth => REG_ADR_WIDTH
+    )
+    port map (
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_currentInst(11 downto 7), -- Extract dst address from instruction
+      po_data => s_ex_dstAddr
+    );
   -- end solution!!
 
   ---********************************************************************
   ---* execute phase
   ---********************************************************************
   -- begin solution:
+  OP1_REGISTER: entity work.PipelineRegister(behavior)
+    generic map (
+      registerWidth => WORD_WIDTH
+    )
+    port map (
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_alu_newOP1,
+      po_data => s_alu_currentOP1
+    );
+
+  OP2_REGISTER: entity work.PipelineRegister(behavior)
+    generic map (
+      registerWidth => WORD_WIDTH
+    )
+    port map (
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_alu_newOP2,
+      po_data => s_alu_currentOP2
+    );
+
+  ALU: entity work.my_alu(behavior)
+    generic map (
+      G_DATA_WIDTH => WORD_WIDTH,
+      G_OP_WIDTH => ALU_OPCODE_WIDTH
+    )
+    port map (
+      pi_OP1 => s_alu_currentOP1,
+      pi_OP2 => s_alu_currentOP2,
+      pi_aluOP => s_ex_controlword.ALU_OP,
+      po_aluOut => s_alu_newOut,
+      po_carryOut => open
+    );
   -- end solution!!
 
   ---********************************************************************
@@ -129,16 +200,48 @@ begin
   ---********************************************************************
   ---* memory phase
   ---********************************************************************
+  -- begin solution:
+  -- end solution!!
 
   ---********************************************************************
   ---* Pipeline-Register (MEM -> WB) 
   ---********************************************************************
   -- begin solution:
+  WB_CONTROLWORD: entity work.ControlWordRegister
+    port map (
+      pi_rst => pi_rst,
+      pi_clk => pi_clk,
+      pi_controlWord => s_ex_controlword,
+      po_controlWord => s_wb_controlword
+    );
+  WB_PIPELINE: entity work.PipelineRegister(behavior)
+    generic map (
+      registerWidth => REG_ADR_WIDTH
+    )
+    port map (
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_ex_dstAddr,
+      po_data => s_wb_dstAddr
+    );
   -- end solution!!
 
   ---********************************************************************
   ---* write back phase
   ---********************************************************************
+  -- begin solution:
+  WB_REGISTER: entity work.PipelineRegister(behavior)
+    generic map (
+      registerWidth => WORD_WIDTH
+    )
+    port map (
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_alu_currentOut,
+      po_data => s_alu_wb
+    );
+
+  -- end solution!!
 
   ---********************************************************************
   ---* register file (negative clock)
@@ -150,15 +253,15 @@ begin
       adr_width => REG_ADR_WIDTH
     )
     port map (
-      pi_clk => pi_clk,
+      pi_clk => not pi_clk,
       pi_rst => pi_rst,
-      pi_readRegAddr1 => s_instruction(19 downto 15),
-      pi_readRegAddr2 => s_instruction(24 downto 20),
-      pi_writeRegAddr => s_wb_regAddr,
-      pi_writeRegData => open,
+      pi_readRegAddr1 => s_currentInst(19 downto 15),
+      pi_readRegAddr2 => s_currentInst(24 downto 20),
+      pi_writeRegAddr => s_wb_dstAddr,
+      pi_writeRegData => s_alu_wb,
       pi_writeEnable => s_wb_controlword.REG_WRITE,
-      po_readRegData1 => open,
-      po_readRegData2 => open
+      po_readRegData1 => s_alu_newOP1,
+      po_readRegData2 => s_alu_newOP2
     );
   -- end solution!!
   ---********************************************************************

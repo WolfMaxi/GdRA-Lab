@@ -10,6 +10,17 @@ ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_full_ad
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_n_bit_full_adder.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/register/PipelineRegister.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/cache/instruction_cache.vhdl"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/register/controlwordregister.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/decoder/decoder.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/registerfile/register_file.vhdl"
+# =============== ALU ===============
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_xor.vhdl"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_or.vhdl"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_and.vhdl"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_shifter.vhdl"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_alu.vhdl"
+# ===================================
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}riscv/R_only_RISC_V.vhdl"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}testbenches/riscv/R_only_RISC_V_tb.vhdl"
+ghdl -e --std=08 --workdir="${workdir}vhdl" R_only_RISC_V_tb
+ghdl -r --std=08 --workdir="${workdir}vhdl" R_only_RISC_V_tb --vcd="${workdir}vhdl/vcd/r-only_riscv.vcd"

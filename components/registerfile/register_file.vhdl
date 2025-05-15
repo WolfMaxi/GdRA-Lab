@@ -26,7 +26,7 @@ entity register_file is
         pi_writeEnable  : in std_logic;
         po_readRegData1 : out std_logic_vector(word_width-1 downto 0);
         po_readRegData2 : out std_logic_vector(word_width-1 downto 0);
-        po_registerOut  : out registermemory
+        po_registerOut  : out registermemory := (others => (others => '0'))
     );  
 end entity register_file;
 
