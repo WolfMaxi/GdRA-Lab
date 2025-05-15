@@ -27,8 +27,8 @@ use work.my_alu;
 
 entity r_only_RISC_V is
   port (
-    pi_rst : in std_logic;
-    pi_clk : in std_logic;
+    pi_rst : in std_logic := '0';
+    pi_clk : in std_logic := '0';
     pi_instruction : in memory := (others => (others => '0'));
     po_registersOut : out registerMemory := (others => (others => '0'))
   );
@@ -41,14 +41,16 @@ architecture structure of r_only_RISC_V is
   -- signals
   -- begin solution:
   -- =============== PC ===============
-  signal s_pc_currentAddr, s_pc_newAddr: std_logic_vector(WORD_WIDTH - 1 downto 0); -- Current and new adress instruction in pc
-  signal s_currentInst, s_newInst: std_logic_vector(WORD_WIDTH - 1 downto 0); -- Current and new instruction in IF phase
+  signal s_pc_currentAddr, s_pc_newAddr: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0'); -- Current and new adress instruction in pc
+  signal s_currentInst, s_newInst: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0'); -- Current and new instruction in IF phase
   -- ============ Pipeline ============
-  signal s_id_controlword, s_ex_controlword, s_wb_controlword: controlword;
-  signal s_ex_dstAddr, s_wb_dstAddr: std_logic_vector(REG_ADR_WIDTH - 1 downto 0);
+  signal s_id_controlword, s_ex_controlword, s_wb_controlword: controlword := control_word_init;
+  signal s_ex_dAddr, s_wb_dAddr: std_logic_vector(REG_ADR_WIDTH - 1 downto 0) := (others => '0');
+  signal s_ex_sAddr, s_wb_sAddr: std_logic_vector(REG_ADR_WIDTH - 1 downto 0) := (others => '0');
+  signal s_ex_tAddr, s_wb_tAddr: std_logic_vector(REG_ADR_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Execute =============
-  signal s_alu_newOP1, s_alu_newOP2, s_alu_currentOP1, s_alu_currentOP2: std_logic_vector(WORD_WIDTH - 1 downto 0);
-  signal s_alu_newOut, s_alu_currentOut, s_alu_wb: std_logic_vector(WORD_WIDTH - 1 downto 0);
+  signal s_alu_newOP1, s_alu_newOP2, s_alu_currentOP1, s_alu_currentOP2: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_alu_newOut, s_alu_currentOut, s_alu_wb: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- end solution!!
 begin
 
@@ -139,7 +141,7 @@ begin
       pi_controlWord => s_id_controlword,
       po_controlWord => s_ex_controlword
     );
-  EX_PIPELINE: entity work.PipelineRegister(behavior)
+  EX_D_PIPELINE: entity work.PipelineRegister(behavior)
     generic map (
       registerWidth => REG_ADR_WIDTH
     )
@@ -147,7 +149,29 @@ begin
       pi_clk => pi_clk,
       pi_rst => pi_rst,
       pi_data => s_currentInst(11 downto 7), -- Extract dst address from instruction
-      po_data => s_ex_dstAddr
+      po_data => s_ex_dAddr
+    );
+
+  EX_S_PIPELINE: entity work.PipelineRegister(behavior)
+    generic map (
+      registerWidth => REG_ADR_WIDTH
+    )
+    port map (
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_currentInst(19 downto 15), -- Extract s address from instruction
+      po_data => s_ex_sAddr
+    );
+
+  EX_T_PIPELINE: entity work.PipelineRegister(behavior)
+    generic map (
+      registerWidth => REG_ADR_WIDTH
+    )
+    port map (
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_currentInst(24 downto 20), -- Extract t address from instruction
+      po_data => s_ex_tAddr
     );
   -- end solution!!
 
@@ -214,15 +238,26 @@ begin
       pi_controlWord => s_ex_controlword,
       po_controlWord => s_wb_controlword
     );
-  WB_PIPELINE: entity work.PipelineRegister(behavior)
+  WB_D_PIPELINE: entity work.PipelineRegister(behavior)
     generic map (
       registerWidth => REG_ADR_WIDTH
     )
     port map (
       pi_clk => pi_clk,
       pi_rst => pi_rst,
-      pi_data => s_ex_dstAddr,
-      po_data => s_wb_dstAddr
+      pi_data => s_ex_dAddr,
+      po_data => s_wb_dAddr
+    );
+
+  WB_S_PIPELINE: entity work.PipelineRegister(behavior)
+    generic map (
+      registerWidth => REG_ADR_WIDTH
+    )
+    port map (
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_ex_sAddr,
+      po_data => s_wb_sAddr
     );
   -- end solution!!
 
@@ -255,13 +290,14 @@ begin
     port map (
       pi_clk => not pi_clk,
       pi_rst => pi_rst,
-      pi_readRegAddr1 => s_currentInst(19 downto 15),
-      pi_readRegAddr2 => s_currentInst(24 downto 20),
-      pi_writeRegAddr => s_wb_dstAddr,
+      pi_readRegAddr1 => s_wb_sAddr,
+      pi_readRegAddr2 => s_wb_tAddr,
+      pi_writeRegAddr => s_wb_dAddr,
       pi_writeRegData => s_alu_wb,
       pi_writeEnable => s_wb_controlword.REG_WRITE,
       po_readRegData1 => s_alu_newOP1,
-      po_readRegData2 => s_alu_newOP2
+      po_readRegData2 => s_alu_newOP2,
+      po_registerOut => po_registersOut
     );
   -- end solution!!
   ---********************************************************************

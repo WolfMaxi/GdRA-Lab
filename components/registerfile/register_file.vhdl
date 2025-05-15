@@ -10,7 +10,7 @@ library ieee;
   use ieee.numeric_std.all;
   use ieee.math_real.all;
   use work.constant_package.all;
-  use work.types_package.all;
+  use work.types.all;
 
 entity register_file is
     generic(
