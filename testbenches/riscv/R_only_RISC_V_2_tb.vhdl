@@ -7,7 +7,7 @@
 
 -- ========================================================================
 -- Author:       Marcel Rieß
--- Last updated: 25.04.2024
+-- Last updated: 14.05.2025
 -- Description:  R-Only-RISC-V foran incomplete RV32I implementation, support
 --               only R-Instructions. 
 --
@@ -18,6 +18,7 @@ library ieee;
   use ieee.numeric_std.all;
   use work.constant_package.all;
   use work.types.all;
+  use work.util_asm_package.all;
   
 entity R_only_RISC_V_2_tb is
 end entity R_only_RISC_V_2_tb;
@@ -48,17 +49,16 @@ riscv_inst : entity work.R_only_RISC_V
 
 
   begin
-      s_clk <= '0';
-      wait for PERIOD / 2;
-
-   for i in 0 to 30 loop
+   wait for PERIOD/2;
+   for i in 1 to 21 loop
       s_clk <= '1';
       wait for PERIOD / 2;
       s_clk <= '0';
       wait for PERIOD / 2;
 
-      -- begin solution:
+    -- begin solution:
 -- end solution!!
+
     end loop;
     report "End of test!!!";
 wait;

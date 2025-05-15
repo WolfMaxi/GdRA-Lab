@@ -7,10 +7,9 @@
 
 -- ========================================================================
 -- Author:       Marcel Rieß
--- Last updated: 09.04.2025
--- Description:  R-Only-RISC-V foran incomplete RV32I implementation, support
---               only R-Instructions. 
---
+-- Last updated: 14.05.2025
+-- Description:  RUI-Only-RISC-V for an incomplete RV32I implementation, 
+--               support only R/I/U-Instructions. 
 -- ========================================================================
 
 library ieee;
@@ -19,78 +18,95 @@ library ieee;
   use work.constant_package.all;
   use work.types.all;
 
-entity R_only_RISC_V is
+entity r_only_RISC_V is
   port (
-    pi_rst         : in    std_logic := '0';
+    pi_rst         : in    std_logic;
     pi_clk         : in    std_logic;
     pi_instruction : in    memory := (others => (others => '0'));
-    po_registersOut : out   registerMemory := (others => (others => '0'));
-    po_debugdatamemory :out memory :=(others => (others => '0'))
-   );
-end entity R_only_RISC_V;
+    po_registersOut : out   registerMemory := (others => (others => '0'))
+  );
+end entity r_only_RISC_V;
 
-architecture structure of R_only_RISC_V is
+architecture structure of r_only_RISC_V is
 
-  constant ADD_FOUR_TO_ADDRESS   : std_logic_vector(WORD_WIDTH - 1 downto 0)      := std_logic_vector(to_signed((4), WORD_WIDTH));
+  constant PERIOD                : time                                            := 10 ns;
+  constant ADD_FOUR_TO_ADDRESS   : std_logic_vector(WORD_WIDTH - 1 downto 0)       := std_logic_vector(to_signed((4), WORD_WIDTH));
   -- signals
   -- begin solution:
   -- end solution!!
-
 begin
 
--- instanciate program counter adder and pc-register
--- begin solution:
+
+---********************************************************************
+---* program counter adder and pc-register
+---********************************************************************
+-- begin solution:  
 -- end solution!!
 
--- instanciate instruction cache 
--- begin solution:
+
+---********************************************************************
+---* instruction fetch 
+---********************************************************************
+-- begin solution:  
 -- end solution!!
--- instanciate instruction decoder
--- begin solution:
--- end solution!!
--- instanciate register file
--- begin solution:
--- end solution!!
--- instanciate ALU
--- begin solution:
--- end solution!!
--- instanciate pipeline-register id to ex for op1
--- begin solution:
--- end solution!!
--- instanciate pipeline-register id to ex for op2
+
+---********************************************************************
+---* Pipeline-Register (IF -> ID) start
+---********************************************************************
+  
 -- begin solution:
 -- end solution!!
 
 
--- instanciate pipeline-register if to id for instruction
+---********************************************************************
+---* decode phase
+---********************************************************************
 -- begin solution:
 -- end solution!!
 
--- instanciate pipeline-register id to ex for controlword
--- begin solution:
+
+---********************************************************************
+---* Pipeline-Register (ID -> EX) 
+---********************************************************************
+-- begin solution: 
 -- end solution!!
--- instanciate pipeline-register id to ex for rs-adress
+
+
+---********************************************************************
+---* execute phase
+---********************************************************************
+ -- begin solution:
+ -- end solution!!
+
+---********************************************************************
+---* Pipeline-Register (EX -> MEM) 
+---********************************************************************
 -- begin solution:
 -- end solution!!
 
--- instanciate pipeline-register ex to mem for controlword
--- begin solution:
--- end solution!!
--- instanciate pipeline-register ex to mem for rs-adress
--- begin solution:
--- end solution!!
--- instanciate pipeline-register ex to mem for alu-result
--- begin solution:
+---********************************************************************
+---* memory phase
+---********************************************************************
+
+
+---********************************************************************
+---* Pipeline-Register (MEM -> WB) 
+---********************************************************************
+ -- begin solution:
 -- end solution!!
 
--- instanciate pipeline-register mem to wb for controlword
+---********************************************************************
+---* write back phase
+---********************************************************************
+
+
+
+---********************************************************************
+---* register file (negative clock)
+---********************************************************************
 -- begin solution:
--- end solution!!
--- instanciate pipeline-register ex to mem for rs-adress
--- begin solution:
--- end solution!!
--- instanciate pipeline-register mem to wb for alu-result
--- begin solution:
--- end solution!!
+    -- end solution!!
+---********************************************************************
+---********************************************************************    
 
 end architecture;
