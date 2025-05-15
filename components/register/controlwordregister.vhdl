@@ -22,8 +22,8 @@ use work.types.all;
 entity ControlWordRegister is
 
   port (
-    pi_rst : in std_logic;
-    pi_clk : in std_logic;
+    pi_rst : in std_logic := '0';
+    pi_clk : in std_logic := '0';
     pi_controlWord : in controlWord := CONTROL_WORD_INIT; -- incoming control word
     po_controlWord : out controlWord := CONTROL_WORD_INIT -- outgoing control word
   );

@@ -30,7 +30,6 @@ entity decoder is
         word_width : integer := WORD_WIDTH
     );
     port (
-        pi_clk : in std_logic := '0';
         pi_instruction : in std_logic_vector(word_width - 1 downto 0) := (others => '0');
         po_controlWord : out controlword := control_word_init
     );
@@ -60,7 +59,7 @@ begin
             when rFormat =>
                 v_func7 := pi_instruction(31 downto 25);
                 v_func3 := pi_instruction(14 downto 12);
-                po_controlWord.ALU_OP <= v_func7(5) & v_func3; 
+                po_controlWord.ALU_OP <= v_func7(5) & v_func3;
                 po_controlWord.I_IMM_SEL <= '0';
                 po_controlWord.REG_WRITE <= '1';
             when others =>

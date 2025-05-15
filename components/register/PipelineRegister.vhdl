@@ -22,9 +22,9 @@ entity PipelineRegister is
         registerWidth : integer := DATA_WIDTH_GEN
     );
     port (
-        pi_clk, pi_rst: in STD_LOGIC;
-        pi_data: in STD_LOGIC_VECTOR(registerWidth - 1 downto 0);
-        po_data: out STD_LOGIC_VECTOR(registerWidth - 1 downto 0)
+        pi_clk, pi_rst: in STD_LOGIC := '0';
+        pi_data: in STD_LOGIC_VECTOR(registerWidth - 1 downto 0) := (others => '0');
+        po_data: out STD_LOGIC_VECTOR(registerWidth - 1 downto 0) := (others => '0')
     );
 end entity;
 
