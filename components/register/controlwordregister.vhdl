@@ -33,8 +33,8 @@ architecture arc1 of ControlWordRegister is
   signal s_controlWord : controlWord := CONTROL_WORD_INIT;
 begin
 
-  process (pi_clk,pi_rst)
-    
+  process (pi_clk, pi_rst)
+
   begin
 
     if (pi_rst) then
