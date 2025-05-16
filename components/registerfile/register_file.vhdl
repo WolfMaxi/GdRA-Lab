@@ -26,31 +26,18 @@ entity register_file is
         pi_writeEnable : in std_logic := '0';
         po_readRegData1 : out std_logic_vector(word_width - 1 downto 0) := (others => '0');
         po_readRegData2 : out std_logic_vector(word_width - 1 downto 0) := (others => '0');
-        po_registerOut : out registermemory := (
-            0 => (others => '0'),
-            1 => std_logic_vector(to_unsigned(9, word_width)),
-            2 => std_logic_vector(to_unsigned(8, word_width)),
-            others => (others => '0')
-        )
+        po_registerOut : out registermemory := (others => (others => '0'))
     );
 end entity register_file;
 
 architecture behavior of register_file is
-    signal s_array : registermemory := (others => (others => '0')); --0te register wird beim start auf 0 gesetzt                 
+    signal s_array : registermemory := (
+        0 => (others => '0'),
+        1 => std_logic_vector(to_unsigned(9, word_width)),
+        2 => std_logic_vector(to_unsigned(8, word_width)),
+        others => (others => '0')
+    );             
 begin
-    process
-    begin
-        s_array <= (
-            0 => (others => '0'),
-            1 => std_logic_vector(to_unsigned(9, word_width)),
-            2 => std_logic_vector(to_unsigned(8, word_width)),
-            others => (others => '0')
-        );
-        wait for 5 ns;
-        report "Inhalt von Register x01: "& INTEGER'image(to_integer(unsigned(s_array(1))));
-        report "Inhalt von Register x02: "& INTEGER'image(to_integer(unsigned(s_array(2))));
-        wait;
-    end process;
     process (pi_clk)
     begin
         if pi_rst = '1' then -- Reset signal

@@ -95,6 +95,7 @@ begin
     port map(
       pi_adr => s_pc_currentAddr,
       pi_clk => pi_clk,
+      pi_rst => pi_rst,
       pi_instructionCache => pi_instruction,
       po_instruction => s_newInst
     );
@@ -137,14 +138,14 @@ begin
   ---********************************************************************
 
   -- begin solution: 
-  EX_CONTROLWORD : entity work.ControlWordRegister(arc1)
+  ID_EX_CONTROLWORD : entity work.ControlWordRegister(arc1)
     port map(
       pi_rst => pi_rst,
       pi_clk => pi_clk,
       pi_controlWord => s_id_controlword,
       po_controlWord => s_ex_controlword
     );
-  EX_PIPELINE : entity work.PipelineRegister(behavior)
+  ID_EX_PIPELINE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => REG_ADR_WIDTH
     )
@@ -190,8 +191,8 @@ begin
       G_OP_WIDTH => ALU_OPCODE_WIDTH
     )
     port map(
-      pi_OP1 => s_if_aluOP1,
-      pi_OP2 => s_if_aluOP2,
+      pi_OP1 => s_id_aluOP1,
+      pi_OP2 => s_id_aluOP2,
       pi_aluOP => s_ex_controlword.ALU_OP,
       po_aluOut => s_ex_aluOut,
       po_carryOut => open
@@ -203,14 +204,14 @@ begin
   ---********************************************************************
 
   -- begin solution:
-  MEM_CONTROLWORD : entity work.ControlWordRegister(arc1)
+  EX_MEM_CONTROLWORD : entity work.ControlWordRegister(arc1)
     port map(
       pi_rst => pi_rst,
       pi_clk => pi_clk,
       pi_controlWord => s_ex_controlword,
       po_controlWord => s_mem_controlword
     );
-  MEM_PIPELINE : entity work.PipelineRegister(behavior)
+  EX_MEM_PIPELINE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => REG_ADR_WIDTH
     )
@@ -233,14 +234,14 @@ begin
   ---* Pipeline-Register (MEM -> WB) 
   ---********************************************************************
   -- begin solution:
-  WB_CONTROLWORD : entity work.ControlWordRegister
+  MEM_WB_CONTROLWORD : entity work.ControlWordRegister
     port map(
       pi_rst => pi_rst,
       pi_clk => pi_clk,
       pi_controlWord => s_mem_controlword,
       po_controlWord => s_wb_controlword
     );
-  WB_PIPELINE : entity work.PipelineRegister(behavior)
+  MEM_WB_PIPELINE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => REG_ADR_WIDTH
     )
@@ -258,7 +259,7 @@ begin
   ---********************************************************************
   -- begin solution:
 
-  MEM_ALU_PIPELINE : entity work.PipelineRegister(behavior)
+  EX_MEM_ALU_PIPELINE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
     )
@@ -269,7 +270,7 @@ begin
       po_data => s_mem_aluOut
     );
 
-  WB_ALU_PIPELINE : entity work.PipelineRegister(behavior)
+  MEM_WB_ALU_PIPELINE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
     )
