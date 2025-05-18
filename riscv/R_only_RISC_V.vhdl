@@ -94,7 +94,7 @@ begin
     )
     port map(
       pi_adr => s_pc_currentAddr,
-      pi_clk => pi_clk,
+      pi_clk => not pi_clk,
       pi_rst => pi_rst,
       pi_instructionCache => pi_instruction,
       po_instruction => s_newInst
@@ -294,7 +294,7 @@ begin
       adr_width => REG_ADR_WIDTH
     )
     port map(
-      pi_clk => pi_clk,
+      pi_clk => not pi_clk,
       pi_rst => pi_rst,
       pi_readRegAddr1 => s_currentInst(19 downto 15),
       pi_readRegAddr2 => s_currentInst(24 downto 20),
