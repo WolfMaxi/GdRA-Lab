@@ -48,7 +48,7 @@ architecture structure of r_only_RISC_V is
   signal s_id_controlword, s_ex_controlword, s_mem_controlword, s_wb_controlword : controlword := control_word_init;
   signal s_ex_dAddr, s_mem_dAddr, s_wb_dAddr : std_logic_vector(REG_ADR_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Execute =============
-  signal s_if_aluOP1, s_if_aluOP2, s_id_aluOP1, s_id_aluOP2 : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_of_aluOP1, s_of_aluOP2, s_ex_aluOP1, s_ex_aluOP2 : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   signal s_ex_aluOut, s_mem_aluOut, s_wb_aluOut : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- end solution!!
 begin
@@ -170,8 +170,8 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst,
-      pi_data => s_if_aluOP1,
-      po_data => s_id_aluOP1
+      pi_data => s_of_aluOP1,
+      po_data => s_ex_aluOP1
     );
 
   OP2_REGISTER : entity work.PipelineRegister(behavior)
@@ -181,8 +181,8 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst,
-      pi_data => s_if_aluOP2,
-      po_data => s_id_aluOP2
+      pi_data => s_of_aluOP2,
+      po_data => s_ex_aluOP2
     );
 
   ALU : entity work.my_alu(behavior)
@@ -191,8 +191,8 @@ begin
       G_OP_WIDTH => ALU_OPCODE_WIDTH
     )
     port map(
-      pi_OP1 => s_id_aluOP1,
-      pi_OP2 => s_id_aluOP2,
+      pi_OP1 => s_of_aluOP1,
+      pi_OP2 => s_of_aluOP2,
       pi_aluOP => s_ex_controlword.ALU_OP,
       po_aluOut => s_ex_aluOut,
       po_carryOut => open
@@ -301,8 +301,8 @@ begin
       pi_writeRegAddr => s_wb_dAddr,
       pi_writeRegData => s_wb_aluOut,
       pi_writeEnable => s_wb_controlword.REG_WRITE,
-      po_readRegData1 => s_if_aluOP1,
-      po_readRegData2 => s_if_aluOP2,
+      po_readRegData1 => s_of_aluOP1,
+      po_readRegData2 => s_of_aluOP2,
       po_registerOut => po_registersOut
     );
   -- end solution!!
