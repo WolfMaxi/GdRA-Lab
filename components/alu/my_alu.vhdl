@@ -23,8 +23,7 @@ entity my_alu is
   );
   port (
     -- begin solution:
-    pi_OP1 : in std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
-    pi_OP2 : in std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
+    pi_op1, pi_op2 : in std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
     pi_aluOP : in std_logic_vector(G_OP_WIDTH - 1 downto 0) := (others => '0');
     po_aluOut : out std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
     po_carryOut : out std_logic := '0'
@@ -34,7 +33,7 @@ entity my_alu is
 end entity my_alu;
 
 architecture behavior of my_alu is
-  signal s_res1, s_res2, s_res3, s_res4, s_res5, s_res6, s_res7, s_res8 : std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
+  signal s_res1, s_res2, s_res3, s_res4, s_res5 : std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
   signal s_cIn, s_cOut, s_shift_type, s_shift_direction : std_logic := '0';
 
 begin
@@ -49,21 +48,21 @@ begin
   s_shift_type <= pi_aluOP(G_OP_WIDTH - 1);
 
   with pi_aluOP select
-    s_shift_direction <= '0' when SLL_ALU_OP,
-    '1' when SRL_ALU_OP,
-    '1' when SRA_ALU_OP,
-    '0' when others;
+    s_shift_direction <=  '0' when SLL_ALU_OP,
+                          '1' when SRL_ALU_OP,
+                          '1' when SRA_ALU_OP,
+                          '0' when others;
 
   with pi_aluOP select
-    po_aluOut <= s_res1 when XOR_ALU_OP,
-    s_res2 when OR_ALU_OP,
-    s_res3 when AND_ALU_OP,
-    s_res4 when SLL_ALU_OP,
-    s_res4 when SRL_ALU_OP,
-    s_res4 when SRA_ALU_OP,
-    s_res5 when ADD_ALU_OP,
-    s_res5 when SUB_ALU_OP,
-    (others => '0') when others;
+    po_aluOut <=  s_res1 when XOR_ALU_OP,
+                  s_res2 when OR_ALU_OP,
+                  s_res3 when AND_ALU_OP,
+                  s_res4 when SLL_ALU_OP,
+                  s_res4 when SRL_ALU_OP,
+                  s_res4 when SRA_ALU_OP,
+                  s_res5 when ADD_ALU_OP,
+                  s_res5 when SUB_ALU_OP,
+                  (others => '0') when others;
 
   po_carryOut <= s_cOut;
   -- end solution!!

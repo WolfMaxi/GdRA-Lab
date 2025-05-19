@@ -24,32 +24,31 @@ entity my_shifter is
     );
     port (
         -- begin solution:
-        P_OP1, P_OP2 : in std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
-        P_SHIFT_TYPE, P_SHIFT_DIR : in std_logic := '0';
-        P_RES : out std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0')
+        pi_op1, pi_op2 : in std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
+        pi_shiftType, pi_shiftDir : in std_logic := '0';
+        po_res : out std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0')
         -- end solution!!
     );
 end entity;
 
 architecture behavior of my_shifter is
     signal s_shamtInt : integer range 0 to (2 ** (integer(log2(real(G_DATA_WIDTH))))) := 0;
-    signal s_tmp_val : std_logic := '0';
 begin
-    s_shamtInt <= to_integer(unsigned(P_OP2(integer(log2(real(G_DATA_WIDTH))) - 1 downto 0)));
+    s_shamtInt <= to_integer(unsigned(pi_op2(integer(log2(real(G_DATA_WIDTH))) - 1 downto 0)));
     -- begin solution:
-    process (P_OP1, P_OP2, P_SHIFT_TYPE, P_SHIFT_DIR)
+    process (pi_op1, pi_op2, pi_shiftType, pi_shiftDir)
     begin
-        if P_SHIFT_DIR = '1' then
-            if P_SHIFT_TYPE = '1' then
-                P_RES <= std_logic_vector(shift_right(signed(P_OP1), to_integer(unsigned(P_OP2))));
+        if pi_shiftDir = '1' then
+            if pi_shiftType = '1' then
+                po_res <= std_logic_vector(shift_right(signed(pi_op1), to_integer(unsigned(pi_op2))));
             else
-                P_RES <= std_logic_vector(shift_right(unsigned(P_OP1), to_integer(unsigned(P_OP2))));
+                po_res <= std_logic_vector(shift_right(unsigned(pi_op1), to_integer(unsigned(pi_op2))));
             end if;
         else
-            if P_SHIFT_TYPE = '1' then
-                P_RES <= std_logic_vector(shift_left(signed(P_OP1), to_integer(unsigned(P_OP2))));
+            if pi_shiftType = '1' then
+                po_res <= std_logic_vector(shift_left(signed(pi_op1), to_integer(unsigned(pi_op2))));
             else
-                P_RES <= std_logic_vector(shift_left(unsigned(P_OP1), to_integer(unsigned(P_OP2))));
+                po_res <= std_logic_vector(shift_left(unsigned(pi_op1), to_integer(unsigned(pi_op2))));
             end if;
         end if;
     end process;
@@ -57,18 +56,17 @@ begin
 end architecture behavior;
 
 architecture dataflow of my_shifter is
-    signal s_shamtInt : integer range 0 to (2 ** (integer(log2(real(G_DATA_WIDTH)))));
     signal s_sra, s_srl, s_sla, s_sll, s_res : std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
     signal s_sel : std_logic_vector(1 downto 0) := (others => '0');
 
 begin
     --begin solution: 
-    s_sra <= std_logic_vector(shift_right(signed(P_OP1), to_integer(unsigned(P_OP2))));
-    s_srl <= std_logic_vector(shift_right(unsigned(P_OP1), to_integer(unsigned(P_OP2))));
-    s_sla <= std_logic_vector(shift_left(signed(P_OP1), to_integer(unsigned(P_OP2))));
-    s_sll <= std_logic_vector(shift_left(unsigned(P_OP1), to_integer(unsigned(P_OP2))));
+    s_sra <= std_logic_vector(shift_right(signed(pi_op1), to_integer(unsigned(pi_op2))));
+    s_srl <= std_logic_vector(shift_right(unsigned(pi_op1), to_integer(unsigned(pi_op2))));
+    s_sla <= std_logic_vector(shift_left(signed(pi_op1), to_integer(unsigned(pi_op2))));
+    s_sll <= std_logic_vector(shift_left(unsigned(pi_op1), to_integer(unsigned(pi_op2))));
 
-    s_sel <= P_SHIFT_DIR & P_SHIFT_TYPE;
+    s_sel <= pi_shiftDir & pi_shiftType;
     with s_sel select
         s_res <= s_sra when "11",
         s_srl when "10",
@@ -76,5 +74,5 @@ begin
         s_sll when "00",
         (others => '0') when others;
     --end solution!!
-    P_RES <= s_res;
+    po_res <= s_res;
 end architecture dataflow;

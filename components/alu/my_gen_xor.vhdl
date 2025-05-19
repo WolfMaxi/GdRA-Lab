@@ -22,14 +22,13 @@ entity my_gen_xor is
         G_DATA_WIDTH : integer := DATA_WIDTH_GEN
     );
     port (
-        P_OP1 : in std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
-        P_OP2 : in std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
-        P_RESULT : out std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0')
+        pi_op1, pi_op2 : in std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
+        po_res : out std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0')
     );
 end my_gen_xor;
 
 architecture behaviour of my_gen_xor is
 begin
-    P_RESULT <= not ((P_OP1 and P_OP2) or (not P_OP1 and not P_OP2));
+    po_res <= pi_op1 xor pi_op2;
 end architecture behaviour;
 -- end solution!!

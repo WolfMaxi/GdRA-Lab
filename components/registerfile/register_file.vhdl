@@ -38,6 +38,10 @@ architecture behavior of register_file is
         others => (others => '0')
     );             
 begin
+    process (s_array)
+    begin
+        po_registerOut <= s_array;
+    end process;
     process (pi_clk)
     begin
         if pi_rst = '1' then -- Reset signal
@@ -50,12 +54,11 @@ begin
             po_readRegData1 <= (others => '0');
             po_readRegData2 <= (others => '0');
         elsif rising_edge(pi_clk) then --Lesen und Schreiben bei steigender Flanke
-            po_readRegData1 <= s_array(to_integer(unsigned(pi_readRegAddr1)));
-            po_readRegData2 <= s_array(to_integer(unsigned(pi_readRegAddr2)));
             if pi_writeEnable = '1' and to_integer(unsigned(pi_writeRegAddr)) /= 0 then --Schreib nur wenn pi_writeEnable = 1 und pi_writeRegAddr != 0
                 s_array(to_integer(unsigned(pi_writeRegAddr))) <= pi_writeRegData;
             end if;
+            po_readRegData1 <= s_array(to_integer(unsigned(pi_readRegAddr1)));
+            po_readRegData2 <= s_array(to_integer(unsigned(pi_readRegAddr2)));
         end if;
-        po_registerOut <= s_array;
     end process;
 end architecture behavior;

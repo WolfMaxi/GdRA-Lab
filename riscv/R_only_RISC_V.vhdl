@@ -63,11 +63,11 @@ begin
       G_DATA_WIDTH => WORD_WIDTH
     )
     port map(
-      P_A => ADD_FOUR_TO_ADDRESS,
-      P_B => s_pc_currentAddr,
-      P_CARRY_IN => '0',
-      P_SUM => s_pc_newAddr,
-      P_CARRY_OUT => open
+      pi_a => ADD_FOUR_TO_ADDRESS,
+      pi_b => s_pc_currentAddr,
+      pi_carryIn => '0',
+      po_sum => s_pc_newAddr,
+      po_carryOut => open
     );
 
   PC : entity work.PipelineRegister(behavior)

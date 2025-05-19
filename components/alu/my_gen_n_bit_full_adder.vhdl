@@ -22,10 +22,10 @@ entity my_gen_n_bit_full_adder is
   );
   port (
     -- begin solution:
-    P_A, P_B : in std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
-    P_CARRY_IN : in std_logic := '0';
-    P_SUM : out std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
-    P_CARRY_OUT : out std_logic := '0'
+    pi_a, pi_b : in std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
+    pi_carryIn : in std_logic := '0';
+    po_sum : out std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
+    po_carryOut : out std_logic := '0'
     -- end solution!!
   );
 end my_gen_n_bit_full_adder;
@@ -33,20 +33,20 @@ end my_gen_n_bit_full_adder;
 -- structure
 architecture structure of my_gen_n_bit_full_adder is
   -- begin solution:
-  signal S_CARRY, S_B : std_logic_vector(G_DATA_WIDTH downto 0) := (others => '0');
+  signal s_carry, s_b : std_logic_vector(G_DATA_WIDTH downto 0) := (others => '0');
 begin
-  S_CARRY(0) <= P_CARRY_IN;
-  P_CARRY_OUT <= S_CARRY(G_DATA_WIDTH);
+  s_carry(0) <= pi_carryIn;
+  po_carryOut <= s_carry(G_DATA_WIDTH);
   GEN : for i in 0 to G_DATA_WIDTH - 1 generate
     FA : entity work.my_full_adder(structure)
       port map(
-        P_A => P_A(i),
-        P_B => S_B(i),
-        P_CARRY_IN => S_CARRY(i),
-        P_SUM => P_SUM(i),
-        P_CARRY_OUT => S_CARRY(i + 1)
+        pi_a => pi_a(i),
+        pi_b => s_b(i),
+        pi_carryIn => s_carry(i),
+        po_sum => po_sum(i),
+        po_carryOut => s_carry(i + 1)
       );
-    S_B(i) <= ((S_CARRY(0) nand S_CARRY(0)) nand P_B(i)) nand (S_CARRY(0) nand (P_B(i) nand P_B(i)));
+    s_b(i) <= ((s_carry(0) nand s_carry(0)) nand pi_b(i)) nand (s_carry(0) nand (pi_b(i) nand pi_b(i)));
   end generate;
   -- end solution!!
 end structure;
