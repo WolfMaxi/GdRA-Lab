@@ -28,10 +28,18 @@ architecture structure of R_only_RISC_V_2_tb is
   constant PERIOD : time := 10 ns;
   -- signals
   -- begin solution:
+  signal s_rst : std_logic := '0';
+  signal s_clk : std_logic := '0';
   -- end solution!!
   signal s_registersOut : registerMemory := (others => (others => '0'));
   signal s_instructions : memory := (
     -- begin solution:
+    1 => Asm2Std("ADD", 2, 2, 1),
+    2 => Asm2Std("ADD", 2, 2, 1),
+    3 => Asm2Std("ADD", 2, 2, 1),
+    4 => Asm2Std("ADD", 2, 2, 1),
+    5 => Asm2Std("ADD", 2, 2, 1),
+    others => (others => '0')
     -- end solution!!
   );
 
@@ -56,6 +64,34 @@ begin
       wait for PERIOD / 2;
 
       -- begin solution:
+      if (i = 5) then -- after 5 clock clock cycles
+        assert (to_integer(signed(s_registersOut(2))) = 17)
+        report "Register 2 contains " & integer'image(to_integer(signed(s_registersOut(2)))) & " but should contain " & integer'image(17) & " after cycle 4"
+          severity error;
+      end if;
+      if (i = 6) then -- after 6 clock clock cycles
+        assert (to_integer(signed(s_registersOut(2))) = 26)
+        report "Register 2 contains " & integer'image(to_integer(signed(s_registersOut(2)))) & " but should contain " & integer'image(26) & " after cycle 5"
+          severity error;
+      end if;
+
+      if (i = 7) then -- after 7 clock clock cycles
+        assert (to_integer(signed(s_registersOut(2))) = 35)
+        report "Register 2 contains " & integer'image(to_integer(signed(s_registersOut(2)))) & " but should contain " & integer'image(35) & " after cycle 6"
+          severity error;
+      end if;
+
+      if (i = 8) then -- after 8 clock clock cycles
+        assert (to_integer(signed(s_registersOut(2))) = 44)
+        report "Register 2 contains " & integer'image(to_integer(signed(s_registersOut(2)))) & " but should contain " & integer'image(44) & " after cycle 7"
+          severity error;
+      end if;
+
+      if (i = 9) then -- after 9 clock clock cycles
+        assert (to_integer(signed(s_registersOut(2))) = 53)
+        report "Register 2 contains " & integer'image(to_integer(signed(s_registersOut(2)))) & " but should contain " & integer'image(53) & " after cycle 8"
+          severity error;
+      end if;
       -- end solution!!
 
     end loop;
