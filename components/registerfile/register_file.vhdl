@@ -45,20 +45,13 @@ begin
     process (pi_clk)
     begin
         if pi_rst = '1' then -- Reset signal
-            s_array <= (
-                0 => (others => '0'),
-                1 => std_logic_vector(to_unsigned(9, word_width)),
-                2 => std_logic_vector(to_unsigned(8, word_width)),
-                others => (others => '0')
-            );
-            po_readRegData1 <= (others => '0');
-            po_readRegData2 <= (others => '0');
+            s_array <= (others => (others => '0'));
         elsif rising_edge(pi_clk) then --Lesen und Schreiben bei steigender Flanke
             if pi_writeEnable = '1' and to_integer(unsigned(pi_writeRegAddr)) /= 0 then --Schreib nur wenn pi_writeEnable = 1 und pi_writeRegAddr != 0
                 s_array(to_integer(unsigned(pi_writeRegAddr))) <= pi_writeRegData;
             end if;
-            po_readRegData1 <= s_array(to_integer(unsigned(pi_readRegAddr1)));
-            po_readRegData2 <= s_array(to_integer(unsigned(pi_readRegAddr2)));
         end if;
     end process;
+    po_readRegData1 <= s_array(to_integer(unsigned(pi_readRegAddr1)));
+    po_readRegData2 <= s_array(to_integer(unsigned(pi_readRegAddr2)));
 end architecture behavior;
