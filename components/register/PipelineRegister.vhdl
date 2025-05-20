@@ -33,8 +33,8 @@ begin
     process (pi_clk)
     begin
     	if pi_rst then
-	    po_data <= (others => '0');
-	elsif rising_edge(pi_clk) then
+	        po_data <= (others => '0');
+	    elsif rising_edge(pi_clk) then
             po_data <= pi_data;
         end if;
     end process;

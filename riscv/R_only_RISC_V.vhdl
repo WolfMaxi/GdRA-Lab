@@ -191,8 +191,8 @@ begin
       G_OP_WIDTH => ALU_OPCODE_WIDTH
     )
     port map(
-      pi_OP1 => s_of_aluOP1,
-      pi_OP2 => s_of_aluOP2,
+      pi_OP1 => s_ex_aluOP1,
+      pi_OP2 => s_ex_aluOP2,
       pi_aluOP => s_ex_controlword.ALU_OP,
       po_aluOut => s_ex_aluOut,
       po_carryOut => open

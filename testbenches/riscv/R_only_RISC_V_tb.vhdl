@@ -19,6 +19,10 @@ use ieee.numeric_std.all;
 use work.constant_package.all;
 use work.types.all;
 
+library std;
+use std.textio.all;
+use ieee.std_logic_textio.all; 
+
 entity R_only_RISC_V_tb is
 end entity R_only_RISC_V_tb;
 
@@ -55,7 +59,14 @@ begin
     );
 
   process is
+    variable instr_string : line;
   begin
+    
+    for i in 1 to 10 loop
+      write(instr_string, string'("Instruction " & integer'image(i) & ": "));
+      write(instr_string, s_instructions(i));
+      writeline(output, instr_string);
+    end loop;
 
     wait for PERIOD / 2;
     for i in 1 to 30 loop
