@@ -1,6 +1,13 @@
+-- Laboratory RA solutions/versuch3
+-- Sommersemester 25
+-- Group Details
+-- Lab Date: 27.05.2025
+-- 1. Participant First and Last Name: Maximilan Wolf
+-- 2. Participant First and Last Name: Esad-Muhammed Cekmeci
+
 -- ========================================================================
 -- Author:       Marcel Rieß
--- Last updated: 16.06.2024
+-- Last updated: 21.05.2025
 -- Description:  RI-Only-RISC-V for an incomplete RV32I implementation, support
 --               only R- and I-Instructions. 
 --
@@ -66,10 +73,10 @@ BEGIN
         IF (cycle = 19) THEN check_register(  0, 3, "SLTIU");END IF;
         IF (cycle = 20) THEN check_register(  0, 3, "SLTI" );END IF;
         IF (cycle = 21) THEN check_register(  1, 3, "SLTIU");END IF;
-        IF (cycle = 29) THEN check_register(  1, 3, "SLT"  );END IF;
-        IF (cycle = 30) THEN check_register(  0, 3, "SLTU" );END IF;
-        IF (cycle = 31) THEN check_register(  1, 3, "SLT"  );END IF;
-        IF (cycle = 32) THEN check_register(  1, 3, "SLTU" );END IF;
+        IF (cycle = 28) THEN check_register(  1, 3, "SLT"  );END IF;
+        IF (cycle = 29) THEN check_register(  1, 3, "SLTU" );END IF;
+        IF (cycle = 30) THEN check_register(  0, 3, "SLT"  );END IF;
+        IF (cycle = 31) THEN check_register(  0, 3, "SLTU" );END IF;
 
       ELSIF s_test = 2 THEN
         IF (cycle =  5) THEN check_register(  9, 1, "ADDI" );END IF;
