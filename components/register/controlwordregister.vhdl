@@ -1,9 +1,9 @@
 -- Laboratory RA solutions/versuch4
 -- Sommersemester 25
 -- Group Details
--- Lab Date:
--- 1. Participant First and Last Name: 
--- 2. Participant First and Last Name:
+-- Lab Date: 20.05.2025
+-- 1. Participant First and Last Name: Maximilan Wolf
+-- 2. Participant First and Last Name: Esad-Muhammed Cekmeci
 
 -- ========================================================================
 -- Author:       Niklas Gutsmiedl
@@ -22,8 +22,8 @@ use work.types.all;
 entity ControlWordRegister is
 
   port (
-    pi_rst : in std_logic;
-    pi_clk : in std_logic;
+    pi_rst : in std_logic := '0';
+    pi_clk : in std_logic := '0';
     pi_controlWord : in controlWord := CONTROL_WORD_INIT; -- incoming control word
     po_controlWord : out controlWord := CONTROL_WORD_INIT -- outgoing control word
   );

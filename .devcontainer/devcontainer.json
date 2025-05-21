@@ -1,0 +1,7 @@
+{
+    "name": "VHDL Devcontainer",
+    "build": {
+        "dockerfile": "Dockerfile"
+    }
+    
+}

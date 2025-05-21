@@ -1,3 +1,4 @@
 *.cf
 *.vcd
+*.ghw
 vhdl_ls.toml
