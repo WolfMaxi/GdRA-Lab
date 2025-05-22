@@ -12,5 +12,5 @@ ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_n_b
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_comparator.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_alu.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}testbenches/alu/my_alu_tb2.vhdl"
-ghdl -e --std=08 --workdir="${workdir}vhdl" my_alu_tb
-ghdl -r --std=08 --workdir="${workdir}vhdl" my_alu_tb --vcd="${workdir}vhdl/vcd/my_alu_tb2.vcd"
+ghdl -e --std=08 --workdir="${workdir}vhdl" my_alu_tb2
+ghdl -r --std=08 --workdir="${workdir}vhdl" my_alu_tb2 --vcd="${workdir}vhdl/vcd/my_alu_tb2.vcd"
