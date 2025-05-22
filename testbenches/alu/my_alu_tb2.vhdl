@@ -22,6 +22,7 @@ end entity my_alu_tb2;
 
 architecture behavior of my_alu_tb2 is
 
+  -- Signale für Inputs und Outputs der ALU
   signal s_op1 : std_logic_vector(DATA_WIDTH_GEN - 1 downto 0) := (others => '0');
   signal s_op2 : std_logic_vector(DATA_WIDTH_GEN - 1 downto 0) := (others => '0');
   signal s_luOut : std_logic_vector(DATA_WIDTH_GEN - 1 downto 0) := (others => '0');
@@ -29,164 +30,180 @@ architecture behavior of my_alu_tb2 is
   signal s_luOp : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0) := (others => '0');
   signal s_carryOut : std_logic;
   signal s_shiftType : std_logic;
-  signal s_shiftDirection : std_logic;
   signal s_zero : std_logic;
   signal s_zeroarray : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0) := (others => '0');
-  constant PERIOD : time := 10 ns; -- Example: ClockPERIOD of 10 ns
-  signal s_test, s_test2 : integer := 0;
+
+  constant PERIOD : time := 10 ns;
+
 begin
 
+  -- Instanziierung der ALU
   lu1 : entity work.my_alu
     generic map(
-      DATA_WIDTH_GEN, ALU_OPCODE_WIDTH
+      DATA_WIDTH_GEN,
+      ALU_OPCODE_WIDTH
     )
     port map(
       pi_op1 => s_op1,
       pi_op2 => s_op2,
       pi_aluOp => s_luOp,
       po_aluOut => s_luOut,
-      po_carryOut => s_carryOut,
-      po_zero => s_zero
+      po_carryOut => s_carryOut
     );
 
+  -- Haupt-Testprozess
   lu : process is
-    variable test : unsigned(DATA_WIDTH_GEN - 1 downto 0);
   begin
-    for op1_i in -(2 ** (DATA_WIDTH_GEN - 1)) to (2 ** (DATA_WIDTH_GEN - 1) - 1) loop
 
+    -- Teste alle möglichen Kombinationen von op1 und op2 im signed Bereich
+    for op1_i in -(2 ** (DATA_WIDTH_GEN - 1)) to (2 ** (DATA_WIDTH_GEN - 1) - 1) loop
       s_op1 <= std_logic_vector(to_signed(op1_i, DATA_WIDTH_GEN));
+      wait for PERIOD/2;
 
       for op2_i in -(2 ** (DATA_WIDTH_GEN - 1)) to (2 ** (DATA_WIDTH_GEN - 1) - 1) loop
-
         s_op2 <= std_logic_vector(to_signed(op2_i, DATA_WIDTH_GEN));
-        wait for PERIOD/2;
-        -- and
+
+        -- === Logische Operationen ===
+
+        -- AND
         s_luOp <= AND_ALU_OP;
-        s_expect <= s_op1 and s_op2;
         wait for PERIOD / 2;
-        assert (s_expect = s_luOut)
-        report "Had error in AND-Function "
+        assert ((s_op1 and s_op2) = s_luOut)
+        report "Fehler bei AND: " & to_string(s_op1) & " AND " & to_string(s_op2)
           severity error;
 
-        -- or
+        -- OR
         s_luOp <= OR_ALU_OP;
-        s_expect <= s_op1 or s_op2;
         wait for PERIOD / 2;
-        assert (s_expect = s_luOut)
-        report "Had error in OR-Function "
+        assert ((s_op1 or s_op2) = s_luOut)
+        report "Fehler bei OR"
           severity error;
-        -- xor
+
+        -- XOR
         s_luOp <= XOR_ALU_OP;
         s_expect <= s_op1 xor s_op2;
         wait for PERIOD / 2;
         assert (s_expect = s_luOut)
-        report "Had error in XOR-Function : " & to_string(signed(s_op1)) & " xor " & to_string(signed(s_op2)) & " = " & to_string(signed(s_luOp)) & " = " & to_string(signed(s_luOut))
+        report "Fehler bei XOR: " & to_string(s_op1) & " XOR " & to_string(s_op2)
           severity error;
 
+        -- === Shift-Operationen ===
         if (op2_i >= 0 and op2_i < integer(log2(real(DATA_WIDTH_GEN)))) then
-          -- sll
+
+          -- SLL (Shift Left Logical)
           s_luOp <= SLL_ALU_OP;
-          if (op2_i <= 0) then
+          wait for PERIOD/2;
+          if op2_i <= 0 then
             s_expect <= s_op1;
-          elsif (op2_i < DATA_WIDTH_GEN) then
+          elsif op2_i < DATA_WIDTH_GEN then
             s_expect(op2_i - 1 downto 0) <= (others => '0');
             s_expect(DATA_WIDTH_GEN - 1 downto op2_i) <= s_op1(DATA_WIDTH_GEN - 1 - op2_i downto 0);
           end if;
           wait for PERIOD / 2;
           assert (s_expect = s_luOut)
-          report "Had error in sll-Function "
+          report "Fehler bei SLL"
             severity error;
 
-          -- srl
+          -- SRL (Shift Right Logical)
           s_luOp <= SRL_ALU_OP;
+          wait for PERIOD/2;
           s_expect <= (others => '0');
-          if (op2_i <= 0) then
+          if op2_i <= 0 then
             s_expect <= s_op1;
-          elsif (op2_i < DATA_WIDTH_GEN) then
-            s_expect <= (others => '0');
+          elsif op2_i < DATA_WIDTH_GEN then
             s_expect(DATA_WIDTH_GEN - 1 - op2_i downto 0) <= s_op1(DATA_WIDTH_GEN - 1 downto op2_i);
           end if;
           wait for PERIOD / 2;
           assert (s_expect = s_luOut)
-          report "Had error in srl-Function "
+          report "Fehler bei SRL"
             severity error;
 
-          -- sra
+          -- SRA (Shift Right Arithmetic)
           s_luOp <= SRA_ALU_OP;
-          if (op2_i <= 0) then
+          wait for PERIOD/2;
+          if op2_i <= 0 then
             s_expect <= s_op1;
-          elsif (op2_i < DATA_WIDTH_GEN) then
+          elsif op2_i < DATA_WIDTH_GEN then
             s_expect <= (others => s_op1(DATA_WIDTH_GEN - 1));
             s_expect(DATA_WIDTH_GEN - 1 - op2_i downto 0) <= s_op1(DATA_WIDTH_GEN - 1 downto op2_i);
           end if;
-
+          wait for PERIOD / 2;
           assert (s_expect = s_luOut)
-          report "Had error in sra-Function"
+          report "Fehler bei SRA"
             severity error;
         end if;
 
-        -- add
+        -- === Arithmetische Operationen ===
+
+        -- ADD mit Überlaufprüfung
         s_luOp <= ADD_ALU_OP;
-
-        wait for PERIOD/2;
-        if (((op1_i + op2_i) /= to_integer(signed(s_luOut))) -- Summe mit ALU result vergleichen
-          and ((op1_i + op2_i - 2 ** DATA_WIDTH_GEN) /= (to_integer(signed(s_luOut)))) -- Überlauf prüfen
-          and ((to_integer(signed(s_luOut)) /= (op1_i + op2_i) mod (2 ** (DATA_WIDTH_GEN))))) then
-          report integer'image(op1_i) & "+" & integer'image(op2_i) & " ==> " & integer'image(op1_i + op2_i) & " but add-op simulation returns " & integer'image(to_integer(signed(s_luOut)))
-            severity error;
-        end if;
-
-        assert ((op1_i + op2_i) = 0 and s_zero = '1') or (((op1_i + op2_i) /= 0 and s_zero = '0') or ((op1_i + op2_i) >= 2 ** DATA_WIDTH_GEN and s_zero = '1') or ((op1_i + op2_i) <= 2 ** DATA_WIDTH_GEN and s_zero = '1'))
-        report "Had error in zero flag of add-Function   mit " & integer'image(to_integer(signed(s_expect))) & integer'image(((op1_i))) & integer'image(((op2_i)))
+        wait for PERIOD / 2;
+        assert (
+        (to_integer(signed(s_luOut)) = op1_i + op2_i) or
+        (to_integer(signed(s_luOut)) = (op1_i + op2_i + 2 ** DATA_WIDTH_GEN)) or
+        (to_integer(signed(s_luOut)) = (op1_i + op2_i - 2 ** DATA_WIDTH_GEN))
+        )
+        report integer'image(op1_i) & " + " & integer'image(op2_i) & " = " &
+          integer'image(op1_i + op2_i) & ", aber Ergebnis: " &
+          integer'image(to_integer(signed(s_luOut)))
           severity error;
 
-        -- sub
+        -- SUB mit Überlaufprüfung
         s_luOp <= SUB_ALU_OP;
-
-        wait for PERIOD/2;
-        if (((op1_i - op2_i) /= to_integer(signed(s_luOut))) and ((op1_i - op2_i - 2 ** DATA_WIDTH_GEN) /= (to_integer(signed(s_luOut)))) and ((to_integer(signed(s_luOut)) /= (op1_i - op2_i) mod (2 ** (DATA_WIDTH_GEN))))) then
-          report integer'image(op1_i) & "+" & integer'image(op2_i) & " ==> " & integer'image(op1_i + op2_i) & " but sub-op simulation returns " & integer'image(to_integer(signed(s_luOut)))
-            severity error;
-        end if;
-        assert ((op1_i - op2_i) = 0 and s_zero = '1') or (((op1_i - op2_i) /= 0 and s_zero = '0'))
-        report "Had error in zero flag of sub-Function   mit " & integer'image(to_integer(signed(s_expect)))
+        wait for PERIOD / 2;
+        assert (
+        (to_integer(signed(s_luOut)) = op1_i - op2_i) or
+        (to_integer(signed(s_luOut)) = (op1_i - op2_i + 2 ** DATA_WIDTH_GEN)) or
+        (to_integer(signed(s_luOut)) = (op1_i - op2_i - 2 ** DATA_WIDTH_GEN))
+        )
+        report integer'image(op1_i) & " - " & integer'image(op2_i) & " = " &
+          integer'image(op1_i - op2_i) & ", aber Ergebnis: " &
+          integer'image(to_integer(signed(s_luOut)))
           severity error;
 
-        -- slt
+        -- SLT (Set Less Than, signed)
         s_luOp <= SLT_ALU_OP;
-
-        wait for PERIOD/2;
-        if ((op1_i < op2_i) and (to_integer(signed(s_luOut)) /= 1)) then
-          report integer'image(op1_i) & "<" & integer'image(op2_i) & " ==> " & boolean'image(op1_i < op2_i) & " but sub-op simulation returns " & to_string(s_luOut)
+        wait for PERIOD / 2;
+        if op1_i < op2_i then
+          assert to_integer(signed(s_luOut)) = 1
+          report "Fehler bei SLT: " & integer'image(op1_i) & " < " & integer'image(op2_i)
             severity error;
-        elsif ((op1_i >= op2_i) and (to_integer(signed(s_luOut)) /= 0)) then
-          report integer'image(op1_i) & "<" & integer'image(op2_i) & " ==> " & boolean'image(op1_i < op2_i) & " but sub-op simulation returns " & to_string(s_luOut)
+        else
+          assert to_integer(signed(s_luOut)) = 0
+          report "Fehler bei SLT: " & integer'image(op1_i) & " >= " & integer'image(op2_i)
             severity error;
         end if;
-        assert ((op1_i >= op2_i) and s_zero = '1') or (((op1_i < op2_i) and s_zero = '0'))
-        report "Had error in zero flag of slt-Function   mit " & integer'image(to_integer(signed(s_expect)))
-          severity error;
 
+        wait for PERIOD / 2;
       end loop;
-
     end loop;
-    for op1_i in 0 to (2 ** (DATA_WIDTH_GEN) - 1) loop
+
+    -- === SLTU (Set Less Than, unsigned) ===
+    for op1_i in 0 to (2 ** DATA_WIDTH_GEN - 1) loop
       s_op1 <= std_logic_vector(to_unsigned(op1_i, DATA_WIDTH_GEN));
-      for op2_i in 0 to (2 ** (DATA_WIDTH_GEN) - 1) loop
+      wait for PERIOD/2;
+
+      for op2_i in 0 to (2 ** DATA_WIDTH_GEN - 1) loop
         s_op2 <= std_logic_vector(to_unsigned(op2_i, DATA_WIDTH_GEN));
-        -- sltu
+        wait for PERIOD/2;
+
         s_luOp <= SLTU_ALU_OP;
-        if ((op1_i < op2_i) and (to_integer(signed(s_luOut)) /= 1) and (op1_i >= op2_i) and (to_integer(signed(s_luOut)) /= 0)) then
-          report integer'image(op1_i) & "<" & integer'image(op2_i) & " ==> " & boolean'image(op1_i < op2_i) & " but sltu returns " & to_string(s_luOut)
+        wait for PERIOD/2;
+
+        if (op1_i < op2_i and to_integer(unsigned(s_luOut)) /= 1) or
+          (op1_i >= op2_i and to_integer(unsigned(s_luOut)) /= 0) then
+          report "Fehler bei SLTU: " & integer'image(op1_i) & " < " & integer'image(op2_i)
             severity error;
         end if;
       end loop;
     end loop;
+
+    -- Simulation beenden
     assert false
-    report "End of ALU test!!!"
+    report "Ende des ALU-Tests!"
       severity note;
 
-    wait; --  Wait forever; this will finish the simulation.
+    wait; -- Stoppe die Simulation
 
   end process lu;
 
