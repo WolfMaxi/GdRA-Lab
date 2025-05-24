@@ -23,6 +23,6 @@ ghdl -a --std=08 ../../components/alu/my_comparator.vhdl
 ghdl -a --std=08 ../../components/alu/my_alu.vhdl
 # ===================================
 ghdl -a --std=08 ../../riscv/RI_only_RISC_V.vhdl
-ghdl -a --std=08 ../../testbenches/riscv/RI_only_RISC_V_tb.vhdl
+ghdl -a --std=08 ../../testbenches/riscv/ri_only_RISC_V_tb.vhdl
 ghdl -e --std=08 RI_only_RISC_V_tb
 ghdl -r --std=08 RI_only_RISC_V_tb --wave=ri-only_riscv.ghw --vcd=ri-only_riscv.vcd
