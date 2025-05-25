@@ -22,9 +22,9 @@ entity gen_mux is
         dataWidth: integer := DATA_WIDTH_GEN
     );
     port (
-        pi_first, pi_second: in STD_LOGIC_VECTOR(dataWidth - 1 downto 0);
+        pi_first, pi_second: in STD_LOGIC_VECTOR(dataWidth - 1 downto 0) := (others => '0');
         pi_sel: in STD_LOGIC := '0';
-        pOut: out STD_LOGIC_VECTOR(dataWidth - 1 downto 0)
+        pOut: out STD_LOGIC_VECTOR(dataWidth - 1 downto 0) := (others => '0')
     );
 end gen_mux;
 

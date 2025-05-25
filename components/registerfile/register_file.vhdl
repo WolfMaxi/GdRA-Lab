@@ -31,12 +31,7 @@ entity register_file is
 end entity register_file;
 
 architecture behavior of register_file is
-    signal s_array : registermemory := (
-        0 => (others => '0'),
-        1 => std_logic_vector(to_unsigned(9, word_width)),
-        2 => std_logic_vector(to_unsigned(8, word_width)),
-        others => (others => '0')
-    );         
+    signal s_array : registermemory := (others => (others => '0'));        
     signal s_read1 : std_logic_vector(word_width - 1 downto 0) := (others => '0');
     signal s_read2 : std_logic_vector(word_width - 1 downto 0) := (others => '0');
 
@@ -57,5 +52,5 @@ begin
     end process;
     po_readRegData1 <= s_read1;
     po_readRegData2 <= s_read2;
-    --po_registerOut <= s_array;
+    po_registerOut <= s_array;
 end architecture behavior;

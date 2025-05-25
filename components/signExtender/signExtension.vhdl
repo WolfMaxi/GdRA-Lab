@@ -22,12 +22,12 @@ entity signExtension is --bitbreite des werts wird erweitert min signExtension
         word_width : integer := WORD_WIDTH
     );
     port ( --immedate um direkt in der Instruktion erhalten 
-        pi_instr : in std_logic_vector(word_width - 1 downto 0);
-        po_jumpImm : out std_logic_vector(word_width - 1 downto 0);
-        po_branchImm : out std_logic_vector(word_width - 1 downto 0);
-        po_unsignedImm : out std_logic_vector(word_width - 1 downto 0);--für adressberechnung
-        po_immediateImm : out std_logic_vector(word_width - 1 downto 0);
-        po_storeImm : out std_logic_vector(word_width - 1 downto 0)
+        pi_instr : in std_logic_vector(word_width - 1 downto 0) := (others => '0');
+        po_jumpImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0');
+        po_branchImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0');
+        po_unsignedImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0'); --für adressberechnung
+        po_immediateImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0');
+        po_storeImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0')
     );
     -- end solution!!
 end entity signExtension;
