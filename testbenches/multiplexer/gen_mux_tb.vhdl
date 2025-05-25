@@ -84,6 +84,7 @@ begin
         assert (so_data16 = s_expected16_second) report "Error in Second Input 16";
         assert (so_data32 = s_expected32_second) report "Error in Second Input 32";
 
+        report "End of Test!!!";
         wait;
     end process;
 end behavior;
