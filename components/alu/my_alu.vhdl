@@ -39,12 +39,12 @@ architecture behavior of my_alu is
   signal s_cIn, s_cOut, s_shift_type, s_shift_direction, s_isSigned : std_logic := '0';
 
 begin
-  XOR1 : entity work.my_gen_xor generic map (G_DATA_WIDTH) port map (pi_OP1, pi_op2, s_res1);
-  OR1 : entity work.my_gen_or generic map (G_DATA_WIDTH) port map (pi_op1, pi_op2, s_res2);
-  AND1 : entity work.my_gen_and generic map (G_DATA_WIDTH) port map (pi_op1, pi_op2, s_res3);
-  Shift : entity work.my_shifter generic map (G_DATA_WIDTH) port map (pi_op1, pi_op2, s_shift_type, s_shift_direction, s_res4);
-  ADD1 : entity work.my_gen_n_bit_full_adder generic map (G_DATA_WIDTH) port map (pi_op1, pi_op2, s_cIn, s_res5, s_cOut);
-  COMP: entity work.my_comparator generic map (G_DATA_WIDTH) port map (pi_op1, pi_op2, s_isSigned, s_res6);
+  XOR1 : entity work.my_gen_xor(behavior) generic map (G_DATA_WIDTH) port map (pi_OP1, pi_op2, s_res1);
+  OR1 : entity work.my_gen_or(behavior) generic map (G_DATA_WIDTH) port map (pi_op1, pi_op2, s_res2);
+  AND1 : entity work.my_gen_and(behavior) generic map (G_DATA_WIDTH) port map (pi_op1, pi_op2, s_res3);
+  Shift : entity work.my_shifter(behavior) generic map (G_DATA_WIDTH) port map (pi_op1, pi_op2, s_shift_type, s_shift_direction, s_res4);
+  ADD1 : entity work.my_gen_n_bit_full_adder(structure) generic map (G_DATA_WIDTH) port map (pi_op1, pi_op2, s_cIn, s_res5, s_cOut);
+  COMP: entity work.my_comparator(behavior) generic map (G_DATA_WIDTH) port map (pi_op1, pi_op2, s_isSigned, s_res6);
 
   -- begin solution:
   s_cIn <= pi_aluOP(G_OP_WIDTH - 1);
