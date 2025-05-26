@@ -276,7 +276,7 @@ architecture structure of ri_only_RISC_V is
   ---* Pipeline-Register (MEM -> WB) 
   ---********************************************************************
   -- begin solution:
-  MEM_WB_CONTROLWORD : entity work.ControlWordRegister
+  MEM_WB_CONTROLWORD : entity work.ControlWordRegister(arc1)
     port map(
       pi_rst => pi_rst,
       pi_clk => pi_clk,
