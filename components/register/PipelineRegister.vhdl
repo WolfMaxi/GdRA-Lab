@@ -30,7 +30,7 @@ end entity;
 
 architecture behavior of PipelineRegister is
 begin
-    process (pi_clk)
+    process (pi_clk, pi_rst)
     begin
     	if pi_rst then
 	        po_data <= (others => '0');
