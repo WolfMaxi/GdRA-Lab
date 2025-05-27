@@ -27,8 +27,8 @@ entity my_gen_or is
     );
 end my_gen_or;
 
-architecture behaviour of my_gen_or is
+architecture behavior of my_gen_or is
 begin
     po_res <= pi_op1 or pi_op2;
-end architecture behaviour;
+end architecture behavior;
 -- end solution!!

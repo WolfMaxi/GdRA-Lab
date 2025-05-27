@@ -4,8 +4,7 @@
 -- Lab Date: 29.04.2025
 -- 1. Participant First and  Last Name: Maximilian Wolf
 -- 2. Participant First and Last Name: Esad-Muhammed Cekmeci
- 
- 
+
 -- coding conventions
 -- g_<name> Generics
 -- p_<name> Ports
@@ -20,37 +19,36 @@ entity PipelineRegister_tb is
 end PipelineRegister_tb;
 
 architecture behavior of PipelineRegister_tb is
-    signal s_clk, s_rst: STD_LOGIC := '0';
-    signal si_data5, so_data5: STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
-    signal si_data6, so_data6: STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
-    signal si_data8, so_data8: STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-    signal si_data16, so_data16: STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-    signal si_data32, so_data32: STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+    signal s_clk, s_rst : std_logic := '0';
+    signal si_data5, so_data5 : std_logic_vector(4 downto 0) := (others => '0');
+    signal si_data6, so_data6 : std_logic_vector(5 downto 0) := (others => '0');
+    signal si_data8, so_data8 : std_logic_vector(7 downto 0) := (others => '0');
+    signal si_data16, so_data16 : std_logic_vector(15 downto 0) := (others => '0');
+    signal si_data32, so_data32 : std_logic_vector(31 downto 0) := (others => '0');
 
-    signal s_expected5: STD_LOGIC_VECTOR(4 downto 0) := "11001";
-    signal s_expected6: STD_LOGIC_VECTOR(5 downto 0) := "110010";
-    signal s_expected8: STD_LOGIC_VECTOR(7 downto 0) := "11001100";
-    signal s_expected16: STD_LOGIC_VECTOR(15 downto 0) := "1011101010100110";
-    signal s_expected32: STD_LOGIC_VECTOR(31 downto 0) := "10100101000101101011011010100110";
+    signal s_expected5 : std_logic_vector(4 downto 0) := "11001";
+    signal s_expected6 : std_logic_vector(5 downto 0) := "110010";
+    signal s_expected8 : std_logic_vector(7 downto 0) := "11001100";
+    signal s_expected16 : std_logic_vector(15 downto 0) := "1011101010100110";
+    signal s_expected32 : std_logic_vector(31 downto 0) := "10100101000101101011011010100110";
 
-    signal s_rst5: STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
-    signal s_rst6: STD_LOGIC_VECTOR(5 downto 0) := (others => '0');
-    signal s_rst8: STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-    signal s_rst16: STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-    signal s_rst32: STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+    signal s_rst5 : std_logic_vector(4 downto 0) := (others => '0');
+    signal s_rst6 : std_logic_vector(5 downto 0) := (others => '0');
+    signal s_rst8 : std_logic_vector(7 downto 0) := (others => '0');
+    signal s_rst16 : std_logic_vector(15 downto 0) := (others => '0');
+    signal s_rst32 : std_logic_vector(31 downto 0) := (others => '0');
 
-
-    constant clock_period: time := 10 ns;
-    constant period: time := 20 ns;
+    constant clock_period : time := 10 ns;
+    constant period : time := 20 ns;
 begin
-    DUT5: entity work.PipelineRegister generic map (5) port map(s_clk, s_rst, si_data5, so_data5);
-    DUT6: entity work.PipelineRegister generic map (6) port map(s_clk, s_rst, si_data6, so_data6);
-    DUT8: entity work.PipelineRegister generic map (8) port map(s_clk, s_rst, si_data8, so_data8);
-    DUT16: entity work.PipelineRegister generic map (16) port map(s_clk, s_rst, si_data16, so_data16);
-    DUT31: entity work.PipelineRegister generic map (32) port map(s_clk, s_rst, si_data32, so_data32);
+    DUT5 : entity work.PipelineRegister generic map (5) port map(s_clk, s_rst, si_data5, so_data5);
+    DUT6 : entity work.PipelineRegister generic map (6) port map(s_clk, s_rst, si_data6, so_data6);
+    DUT8 : entity work.PipelineRegister generic map (8) port map(s_clk, s_rst, si_data8, so_data8);
+    DUT16 : entity work.PipelineRegister generic map (16) port map(s_clk, s_rst, si_data16, so_data16);
+    DUT31 : entity work.PipelineRegister generic map (32) port map(s_clk, s_rst, si_data32, so_data32);
 
     -- Clock
-    clock: process
+    clock : process
     begin
         s_clk <= '0';
         wait for clock_period / 2;

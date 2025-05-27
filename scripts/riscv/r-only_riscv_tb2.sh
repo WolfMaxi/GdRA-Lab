@@ -19,6 +19,7 @@ ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_xor
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_or.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_and.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_shifter.vhdl"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_comparator.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_alu.vhdl"
 # ===================================
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}riscv/R_only_RISC_V.vhdl"
