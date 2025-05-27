@@ -17,10 +17,10 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 use work.constant_package.all;
 
-entity my_alu_tb2 is
-end entity my_alu_tb2;
+entity my_alu_i_tb is
+end entity my_alu_i_tb;
 
-architecture behavior of my_alu_tb2 is
+architecture behavior of my_alu_i_tb is
 
   -- Signale für Inputs und Outputs der ALU
   signal s_op1 : std_logic_vector(DATA_WIDTH_GEN - 1 downto 0) := (others => '0');

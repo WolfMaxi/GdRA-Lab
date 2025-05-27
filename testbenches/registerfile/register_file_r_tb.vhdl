@@ -11,10 +11,10 @@ library ieee;
   use ieee.math_real.all;
   use work.constant_package.all;
 
-entity register_file_tb is
-end entity register_file_tb;
+entity register_file_r_tb is
+end entity register_file_r_tb;
 
-architecture behavior of register_file_tb is
+architecture behavior of register_file_r_tb is
     constant FIRST_INDEX: integer := 0;
     constant LAST_INDEX: integer := 2**REG_ADR_WIDTH - 1;
 

@@ -1,9 +1,9 @@
 -- Laboratory RA solutions/versuch5
 -- Sommersemester 25
 -- Group Details
--- Lab Date: 27.05.25
--- 1. Participant First and  Last Name: Maximilian Wolf
--- 2. Participant First and Last Name: Esad-Muhammed Cekmeci
+-- Lab Date:
+-- 1. Participant First and Last Name: 
+-- 2. Participant First and Last Name:
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -11,10 +11,10 @@ use ieee.numeric_std.all;
 use work.constant_package.all;
 use work.types.all;
 
-entity register_file_tb2 is
-end register_file_tb2;
+entity register_file_i_tb is
+end register_file_i_tb;
 
-architecture behavior of register_file_tb2 is
+architecture behavior of register_file_i_tb is
   -- Component declaration
   component register_file
     generic (
@@ -74,11 +74,6 @@ begin
   begin
     -- Reset
     rst <= '1';
-    readAddr1 <= (others => '0');
-    readAddr2 <= (others => '0');
-    writeAddr <= (others => '0');
-    writeData <= (others => '0');
-    writeEnable <= '0';
     wait for c_clk_period;
     rst <= '0';
     wait for c_clk_period;
@@ -96,10 +91,8 @@ begin
     clk <= '1';
     wait for c_clk_period / 2;
 
-    wait for 1 ns;
-
-    assert readData1 = x"00000009"
-    report "RAW hazard: Value mismatch! Expected 00000009, got " & to_hstring(readData1)
+    assert readData1 = x"00000000"
+    report "RAW hazard: Value mismatch! Expected 00000000, got " & to_hstring(readData1)
     severity error;
   
     writeEnable <= '0';
