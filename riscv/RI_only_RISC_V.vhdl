@@ -41,13 +41,13 @@ architecture structure of ri_only_RISC_V is
   signal s_id_controlword, s_ex_controlword, s_mem_controlword, s_wb_controlword : controlword := control_word_init;
   signal s_ex_dAddr, s_mem_dAddr, s_wb_dAddr : std_logic_vector(REG_ADR_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Immediate ===========
-  signal s_id_immediate, s_ex_immediate, s_ex_aluOP2_sel: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_id_immediate, s_ex_immediate, s_ex_aluOP2_sel : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Execute =============
   signal s_of_aluOP1, s_of_aluOP2, s_ex_aluOP1, s_ex_aluOP2 : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   signal s_ex_aluOut, s_mem_aluOut, s_wb_aluOut : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- end solution!!
-  
-  begin
+
+begin
   ---********************************************************************
   ---* program counter adder and pc-register
   ---********************************************************************
@@ -138,12 +138,12 @@ architecture structure of ri_only_RISC_V is
       word_width => WORD_WIDTH
     )
     port map(
-        pi_instr => s_currentInst,
-        po_jumpImm => open,
-        po_branchImm => open,
-        po_unsignedImm => open,
-        po_immediateImm => s_id_immediate,
-        po_storeImm => open
+      pi_instr => s_currentInst,
+      po_jumpImm => open,
+      po_branchImm => open,
+      po_unsignedImm => open,
+      po_immediateImm => s_id_immediate,
+      po_storeImm => open
     );
   -- end solution!!
 
@@ -161,7 +161,7 @@ architecture structure of ri_only_RISC_V is
       pi_controlWord => s_id_controlword,
       po_controlWord => s_ex_controlword
     );
-  
+
   -- D address pipelining
   ID_EX_PIPELINE : entity work.PipelineRegister(behavior)
     generic map(
@@ -174,8 +174,8 @@ architecture structure of ri_only_RISC_V is
       po_data => s_ex_dAddr
     );
 
-    -- Immediate pipelining
-    ID_EX_IMMEDIATE : entity work.PipelineRegister(behavior)
+  -- Immediate pipelining
+  ID_EX_IMMEDIATE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
     )
@@ -214,18 +214,18 @@ architecture structure of ri_only_RISC_V is
       pi_data => s_of_aluOP2,
       po_data => s_ex_aluOP2
     );
-  
+
   -- Register / Immediate multiplexer  
-  OP2_SEL: entity work.gen_mux(behavior)
-      generic map(
-        dataWidth => WORD_WIDTH
-      )
-      port map(
-        pi_first => s_ex_aluOP2,
-        pi_second => s_ex_immediate,
-        pi_sel => s_ex_controlword.I_IMM_SEL,
-        pOut => s_ex_aluOP2_sel
-      );
+  OP2_SEL : entity work.gen_mux(behavior)
+    generic map(
+      dataWidth => WORD_WIDTH
+    )
+    port map(
+      pi_first => s_ex_aluOP2,
+      pi_second => s_ex_immediate,
+      pi_sel => s_ex_controlword.I_IMM_SEL,
+      pOut => s_ex_aluOP2_sel
+    );
 
   ALU : entity work.my_alu(behavior)
     generic map(
