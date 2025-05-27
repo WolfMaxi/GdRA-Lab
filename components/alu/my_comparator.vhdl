@@ -1,3 +1,18 @@
+-- Laboratory RA solutions/versuch5
+-- Sommer Semester 25
+-- Group Details
+-- Lab Date: 29.04.2025
+-- 1. Participant First and  Last Name: Maximilian Wolf
+-- 2. Participant First and Last Name: Esad-Muhammed Cekmeci
+ 
+ 
+-- coding conventions
+-- g_<name> Generics
+-- p_<name> Ports
+-- c_<name> Constants
+-- s_<name> Signals
+-- v_<name> Variables
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;

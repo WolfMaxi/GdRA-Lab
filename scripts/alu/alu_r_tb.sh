@@ -9,7 +9,8 @@ ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_shifter
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_half_adder.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_full_adder.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_n_bit_full_adder.vhdl"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_comparator.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_alu.vhdl"
-ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}testbenches/alu/my_alu_tb.vhdl"
-ghdl -e --std=08 --workdir="${workdir}vhdl" my_alu_tb
-ghdl -r --std=08 --workdir="${workdir}vhdl" my_alu_tb --vcd="${workdir}vhdl/vcd/my_alu_tb.vcd"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}testbenches/alu/my_alu_r_tb.vhdl"
+ghdl -e --std=08 --workdir="${workdir}vhdl" my_alu_r_tb
+ghdl -r --std=08 --workdir="${workdir}vhdl" my_alu_r_tb --vcd="${workdir}vhdl/vcd/my_alu_r_tb.vcd"

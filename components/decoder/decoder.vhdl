@@ -45,6 +45,8 @@ begin
         variable v_opcode : std_logic_vector(6 downto 0) := (others => '0');
         variable v_func7 : std_logic_vector(6 downto 0) := (others => '0');
         variable v_func3 : std_logic_vector(2 downto 0) := (others => '0');
+        
+        variable v_aluOp : std_logic_vector(3 downto 0) := (others => '0');
     begin
         v_opcode := pi_instruction(6 downto 0);
         case v_opcode is
@@ -60,13 +62,15 @@ begin
             when rFormat =>
                 v_func7 := pi_instruction(31 downto 25);
                 v_func3 := pi_instruction(14 downto 12);
-                po_controlWord.ALU_OP <= v_func7(5) & v_func3;
+                v_aluOp := v_func7(5) & v_func3;
+                po_controlWord.ALU_OP <= v_aluOp;
                 po_controlWord.I_IMM_SEL <= '0';
                 po_controlWord.REG_WRITE <= '1';
             when iFormat =>
-                v_func7 := pi_instruction(31 downto 25);
+        	v_func7 := pi_instruction(31 downto 25);
                 v_func3 := pi_instruction(14 downto 12);
-                po_controlWord.ALU_OP <= v_func7(5) & v_func3;
+                v_aluOp := v_func7(5) & v_func3;
+                po_controlWord.ALU_OP <= v_aluOP;
                 po_controlWord.I_IMM_SEL <= '1';
                 po_controlWord.REG_WRITE <= '1';
             when others =>

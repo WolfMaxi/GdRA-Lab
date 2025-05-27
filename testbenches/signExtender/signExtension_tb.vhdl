@@ -43,7 +43,6 @@ architecture behavior of signExtension_tb is
 
 begin
 
-
   dut1 : entity work.signExtension
 
     port map(
@@ -63,7 +62,7 @@ begin
 
   begin
 
-    for i in - ((2 ** 12) - 1) / 2 to ((2 ** 12) - 1) / 2 loop
+    for i in -((2 ** 12) - 1) / 2 to ((2 ** 12) - 1) / 2 loop
 
       s_Instruction <= Asm2Std("ADDI", 1, 2, i);
       s_iImmexpect <= std_logic_vector(to_signed((i), WORD_WIDTH));
@@ -76,22 +75,22 @@ begin
       assert (s_iImmexpect = s_iImmOut)
       report "Had error in sign extender with i-format: Output is  " & to_string(s_iImmOut) & " but should be " & to_string(s_iImmexpect) & " Input is " & to_string(s_iInstruction)
         severity error;
-        s_Instruction <= Asm2Std("SH", 1, 0, i);
-        s_sImmexpect <= std_logic_vector(to_signed((i), WORD_WIDTH));
+      s_Instruction <= Asm2Std("SH", 1, 0, i);
+      s_sImmexpect <= std_logic_vector(to_signed((i), WORD_WIDTH));
 
-        s_clk <= '1';
-        wait for PERIOD / 2;
-        s_clk <= '0';
-        wait for PERIOD / 2;
-  
-        assert (s_sImmexpect = s_sImmOut)
-        report "Had error in sign extender with s-format"
-            severity error;
+      s_clk <= '1';
+      wait for PERIOD / 2;
+      s_clk <= '0';
+      wait for PERIOD / 2;
+
+      assert (s_sImmexpect = s_sImmOut)
+      report "Had error in sign extender with s-format"
+        severity error;
     end loop;
 
-    for i in - ((2 ** 20) - 1) / 2 to ((2 ** 20) - 1) / 2 loop
+    for i in -((2 ** 20) - 1) / 2 to ((2 ** 20) - 1) / 2 loop
 
-      s_Instruction <= Asm2Std("LUI", 0,i,0);
+      s_Instruction <= Asm2Std("LUI", 0, i, 0);
       v_uExtended := std_logic_vector(to_signed((i), WORD_WIDTH));
       s_uImmediate := (std_logic_vector(signed(v_uExtended(19 downto 0))));
       s_uImmexpect <= std_logic_vector(signed(v_uExtended(19 downto 0))) & v_tmp;
@@ -105,7 +104,7 @@ begin
 
     end loop;
 
-    for i in - ((2 ** 12) - 1) / 2 to ((2 ** 12) - 1) / 2 loop
+    for i in -((2 ** 12) - 1) / 2 to ((2 ** 12) - 1) / 2 loop
 
       s_Instruction <= Asm2Std("BGEU", 0, 0, i);
       s_bImmexpect <= std_logic_vector(to_signed((i * 2), WORD_WIDTH));
@@ -120,22 +119,22 @@ begin
 
     end loop;
 
-      for i in - ((2 ** 20) - 1) / 2 to ((2 ** 20) - 1) / 2 loop
+    for i in -((2 ** 20) - 1) / 2 to ((2 ** 20) - 1) / 2 loop
 
-        s_Instruction <= Asm2Std("JAL",1,i,0);
-        s_jImmexpect <= std_logic_vector(to_signed((i * 2), WORD_WIDTH));
-  
-        s_clk <= '1';
-        wait for PERIOD / 2;
-        s_clk <= '0';
-        wait for PERIOD / 2;
-  
-        assert (s_jImmexpect = s_jImmOut)
-        report "Had error in sign extender with j-format"
-            severity error;
+      s_Instruction <= Asm2Std("JAL", 1, i, 0);
+      s_jImmexpect <= std_logic_vector(to_signed((i * 2), WORD_WIDTH));
 
-      end loop;
-    
+      s_clk <= '1';
+      wait for PERIOD / 2;
+      s_clk <= '0';
+      wait for PERIOD / 2;
+
+      assert (s_jImmexpect = s_jImmOut)
+      report "Had error in sign extender with j-format"
+        severity error;
+
+    end loop;
+
     assert false
     report "end of test"
       severity note;

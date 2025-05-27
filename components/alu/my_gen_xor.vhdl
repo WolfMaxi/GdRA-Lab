@@ -27,8 +27,8 @@ entity my_gen_xor is
     );
 end my_gen_xor;
 
-architecture behaviour of my_gen_xor is
+architecture behavior of my_gen_xor is
 begin
     po_res <= pi_op1 xor pi_op2;
-end architecture behaviour;
+end architecture behavior;
 -- end solution!!

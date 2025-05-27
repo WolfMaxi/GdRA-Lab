@@ -14,6 +14,8 @@ ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/cache/instruct
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/register/controlwordregister.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/decoder/decoder.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/registerfile/register_file.vhdl"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/multiplexer/gen_mux.vhdl"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/signExtender/signExtension.vhdl"
 # =============== ALU ===============
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_xor.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_or.vhdl"
@@ -22,7 +24,7 @@ ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_shifter
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_comparator.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_alu.vhdl"
 # ===================================
-ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}riscv/R_only_RISC_V.vhdl"
-ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}testbenches/riscv/R_only_RISC_V_2_tb.vhdl"
-ghdl -e --std=08 --workdir="${workdir}vhdl" R_only_RISC_V_2_tb
-ghdl -r --std=08 --workdir="${workdir}vhdl" R_only_RISC_V_2_tb --wave="${workdir}vhdl/vcd/r-only_riscv2.ghw" --vcd="${workdir}vhdl/vcd/r-only_riscv2.vcd"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}riscv/RI_only_RISC_V.vhdl"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}testbenches/riscv/RI_only_RISC_V_tb.vhdl"
+ghdl -e --std=08 --workdir="${workdir}vhdl" RI_only_RISC_V_tb
+ghdl -r --std=08 --workdir="${workdir}vhdl" RI_only_RISC_V_tb --wave="${workdir}vhdl/vcd/ri-only_riscv.ghw" --vcd="${workdir}vhdl/vcd/ri-only_riscv.vcd"
