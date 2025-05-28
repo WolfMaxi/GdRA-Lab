@@ -87,6 +87,13 @@ begin
                     po_controlWord.I_IMM_SEL <= '1';
                     po_controlWord.REG_WRITE <= '1';
                     po_controlWord.WB_SEL <= "00"; -- Register Write Back Selection
+                elsif v_opcode = JAL_INS_OP then
+                    po_controlWord.ALU_OP <= ADD_ALU_OP;
+                    po_controlWord.I_IMM_SEL <= '1';
+                    po_controlWord.A_SEL <= '1';
+                    po_controlWord.REG_WRITE <= '1';
+                    po_controlWord.PC_SEL <= '1'; -- Program Counter Selection
+                    po_controlWord.WB_SEL <= "10"; -- JAL Write Back Selection
                 else
                     po_controlWord <= control_word_init; -- Reset control word for unknown uFormat
                 end if;
