@@ -14,6 +14,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 use work.constant_package.all;
 
 entity signExtension is --bitbreite des werts wird erweitert min signExtension
@@ -27,41 +28,47 @@ entity signExtension is --bitbreite des werts wird erweitert min signExtension
         po_branchImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0');
         po_unsignedImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0'); --für adressberechnung
         po_immediateImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0');
-        po_storeImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0')
+        po_storeImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0');
+        po_selectedImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0') --für ALU-Operationen
     );
     -- end solution!!
 end entity signExtension;
 
 architecture arc of signExtension is
-    -- begin solution:
-    --signal s_jumpImm : std_logic_vector(20 downto 0) := (others => '0');
-    --signal s_branchImm : std_logic_vector(12 downto 0) := (others => '0');
-    --signal s_immediateImm : std_logic_vector(11 downto 0) := (others => '0');
-    --signal s_storeImm : std_logic_vector(11 downto 0) := (others => '0');
-
+    signal s_immediateImm_calc : std_logic_vector(word_width - 1 downto 0);
+    signal s_storeImm_calc     : std_logic_vector(word_width - 1 downto 0);
+    signal s_branchImm_calc    : std_logic_vector(word_width - 1 downto 0);
+    signal s_jumpImm_calc      : std_logic_vector(word_width - 1 downto 0);
+    signal s_unsignedImm_calc  : std_logic_vector(word_width - 1 downto 0);
+    signal s_opcode            : std_logic_vector(6 downto 0);
 begin
-    process (pi_instr)
-        variable v_immediateImm : signed (11 downto 0) := (others => '0'); --ALU-Operationen
-        variable v_storeImm : signed (11 downto 0) := (others => '0'); --Speicheroperationen
-        variable v_branchImm : signed (12 downto 0) := (others => '0'); --Sprung- und Verzweigungsoperationen
-        variable v_jumpImm : signed (20 downto 0) := (others => '0'); --Sprungoperationen
+    -- Extraktion wie gehabt:
+    s_immediateImm_calc <= std_logic_vector(resize(signed(pi_instr(31 downto 20)), word_width));
+    s_storeImm_calc     <= std_logic_vector(resize(signed(pi_instr(31 downto 25) & pi_instr(11 downto 7)), word_width));
+    s_branchImm_calc    <= std_logic_vector(resize(signed(pi_instr(31)&pi_instr(7)&pi_instr(30 downto 25)&pi_instr(11 downto 8)&'0'), word_width));
+    s_jumpImm_calc      <= std_logic_vector(resize(signed(pi_instr(31)&pi_instr(19 downto 12)&pi_instr(20)&pi_instr(30 downto 21)&'0'), word_width));
+    s_unsignedImm_calc  <= pi_instr(word_width-1 downto 12) & (11 downto 0 => '0');
 
-    begin
-        v_immediateImm := signed(pi_instr(31 downto 20)); --12 bit extrahierung, interpretation als signed 
-        po_immediateImm <= std_logic_vector(resize(v_immediateImm, word_width)); --Wert wird auf word_width erweitert
-        --signed und resize , um wert auf korrekte breite zu bringen
-        v_storeImm := signed(pi_instr(31 downto 25) & pi_instr(11 downto 7));
-        po_storeImm <= std_logic_vector(resize(v_storeImm, word_width));
-        --signed für vorzeichen behaftet
-        v_branchImm := signed(pi_instr(31) & pi_instr(7) & pi_instr(30 downto 25) & pi_instr(11 downto 8) & '0');
-        po_branchImm <= std_logic_vector(resize(v_branchImm, word_width));
-        --unsigned für vorzeichenlos
-        v_jumpImm := signed(pi_instr(31) & pi_instr(19 downto 12) & pi_instr(20) & pi_instr(30 downto 21) & '0');
-        po_jumpImm <= std_logic_vector(resize(v_jumpImm, word_width));
+    -- Opcode als Signal für concurrent assignment
+    s_opcode <= pi_instr(6 downto 0);
 
-        po_unsignedImm <= pi_instr(word_width - 1 downto 12) & (11 downto 0 => '0'); --extrahierung der oberen bits
-    end process;
-    -- end solution!!
+    -- concurrent conditional signal assignment
+    po_selectedImm <= s_immediateImm_calc when (s_opcode = I_INS_OP or
+                                                 s_opcode = L_INS_OP or
+                                                 s_opcode = JALR_INS_OP)
+                     else s_storeImm_calc     when (s_opcode = S_INS_OP)
+                     else s_branchImm_calc    when (s_opcode = B_INS_OP)
+                     else s_unsignedImm_calc  when (s_opcode = LUI_INS_OP or
+                                                    s_opcode = AUIPC_INS_OP)
+                     else s_jumpImm_calc      when (s_opcode = JAL_INS_OP)
+                     else (others => '0');
+
+    -- die Einzelausgänge kannst du so belassen:
+    po_immediateImm <= s_immediateImm_calc;
+    po_storeImm     <= s_storeImm_calc;
+    po_branchImm    <= s_branchImm_calc;
+    po_jumpImm      <= s_jumpImm_calc;
+    po_unsignedImm  <= s_unsignedImm_calc;
 end architecture arc;
 
 --Wieso immedate-werte? Um direkt in der Instruktion erhalten um nicht extra in register zu speichern

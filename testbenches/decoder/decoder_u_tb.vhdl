@@ -12,10 +12,10 @@ use work.constant_package.all;
 use work.types.all;
 
 
-entity decoder_tb is
-end entity decoder_tb;
+entity decoder_u_tb is
+end entity decoder_u_tb;
 
-architecture behavior of decoder_tb is
+architecture behavior of decoder_u_tb is
 
   constant PERIOD : time := 10 ns; -- Example: ClockPERIOD of 10 ns
   signal s_instruction : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');

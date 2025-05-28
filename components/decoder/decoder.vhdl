@@ -45,9 +45,9 @@ begin
         variable v_opcode : std_logic_vector(6 downto 0) := (others => '0');
         variable v_func7 : std_logic_vector(6 downto 0) := (others => '0');
         variable v_func3 : std_logic_vector(2 downto 0) := (others => '0');
-        
         variable v_aluOp : std_logic_vector(3 downto 0) := (others => '0');
     begin
+        po_controlWord <= control_word_init; -- Reset control word
         v_opcode := pi_instruction(6 downto 0);
         case v_opcode is
             when R_INS_OP => v_insFormat := rFormat;
@@ -66,13 +66,30 @@ begin
                 po_controlWord.ALU_OP <= v_aluOp;
                 po_controlWord.I_IMM_SEL <= '0';
                 po_controlWord.REG_WRITE <= '1';
+                po_controlWord.WB_SEL <= "00"; -- Register Write Back Selection
             when iFormat =>
         	v_func7 := pi_instruction(31 downto 25);
                 v_func3 := pi_instruction(14 downto 12);
                 v_aluOp := v_func7(5) & v_func3;
-                po_controlWord.ALU_OP <= v_aluOP;
+                po_controlWord.ALU_OP <= v_aluOp;
                 po_controlWord.I_IMM_SEL <= '1';
                 po_controlWord.REG_WRITE <= '1';
+                po_controlWord.WB_SEL <= "00"; -- Register Write Back Selection
+            when uFormat => 
+                if v_opcode = LUI_INS_OP then
+                    po_controlWord.ALU_OP <= ADD_ALU_OP;
+                    po_controlWord.I_IMM_SEL <= '1';
+                    po_controlWord.REG_WRITE <= '1';
+                    po_controlWord.WB_SEL <= "01";
+                elsif v_opcode = AUIPC_INS_OP then
+                    po_controlWord.ALU_OP <= ADD_ALU_OP;
+                    po_controlWord.A_SEL <= '1'; -- A-Selection for ALU
+                    po_controlWord.I_IMM_SEL <= '1';
+                    po_controlWord.REG_WRITE <= '1';
+                    po_controlWord.WB_SEL <= "00"; -- Register Write Back Selection
+                else
+                    po_controlWord <= control_word_init; -- Reset control word for unknown uFormat
+                end if;
             when others =>
                 po_controlWord <= control_word_init;
         end case;

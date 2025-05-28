@@ -22,20 +22,29 @@ entity gen_mux is
         dataWidth: integer := DATA_WIDTH_GEN
     );
     port (
-        pi_first, pi_second: in STD_LOGIC_VECTOR(dataWidth - 1 downto 0) := (others => '0');
-        pi_sel: in STD_LOGIC := '0';
+        --pi_first, pi_second: in STD_LOGIC_VECTOR(dataWidth - 1 downto 0) := (others => '0');
+        pi_in0, pi_in1, pi_in2, pi_in3: in STD_LOGIC_VECTOR(dataWidth - 1 downto 0) := (others => '0');
+        --pi_sel: in STD_LOGIC := '0';
+        pi_sel: in STD_LOGIC_VECTOR(1 downto 0) := (others => '0'); -- 2-bit selector for 4 inputs
         pOut: out STD_LOGIC_VECTOR(dataWidth - 1 downto 0) := (others => '0')
     );
 end gen_mux;
 
 architecture behavior of gen_mux is
 begin
-    process(pi_first, pi_second, pi_sel)
+    process(pi_in0, pi_in1, pi_in2, pi_in3, pi_sel)
     begin
-        if pi_sel = '0' then
-            pOut <= pi_first;
-        else
-            pOut <= pi_second;
-        end if;
+        case pi_sel is
+            when "00" =>
+                pOut <= pi_in0;
+            when "01" =>
+                pOut <= pi_in1;
+            when "10" =>
+                pOut <= pi_in2;
+            when "11" =>
+                pOut <= pi_in3;
+            when others =>
+                pOut <= (others => '0'); -- Default case, should not happen
+        end case;
     end process;
 end behavior;
