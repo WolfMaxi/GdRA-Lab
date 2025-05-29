@@ -46,8 +46,15 @@ begin
     s_immediateImm_calc <= std_logic_vector(resize(signed(pi_instr(31 downto 20)), word_width));
     s_storeImm_calc     <= std_logic_vector(resize(signed(pi_instr(31 downto 25) & pi_instr(11 downto 7)), word_width));
     s_branchImm_calc    <= std_logic_vector(resize(signed(pi_instr(31)&pi_instr(7)&pi_instr(30 downto 25)&pi_instr(11 downto 8)&'0'), word_width));
-    s_jumpImm_calc      <= std_logic_vector(resize(signed(pi_instr(31)&pi_instr(19 downto 12)&pi_instr(20)&pi_instr(30 downto 21)&'0'), word_width));
-    s_unsignedImm_calc  <= pi_instr(word_width-1 downto 12) & (11 downto 0 => '0');
+    --s_jumpImm_calc      <= std_logic_vector(resize(signed(pi_instr(31)&pi_instr(19 downto 12)&pi_instr(20)&pi_instr(30 downto 21)&'0'), word_width));
+    --s_unsignedImm_calc  <= pi_instr(word_width-1 downto 12) & (11 downto 0 => '0');
+    s_jumpImm_calc      <= std_logic_vector(resize(signed(pi_instr(31) &         -- Imm[20]
+                                                     pi_instr(19 downto 12) & -- Imm[19:12]
+                                                     pi_instr(20) &         -- Imm[11]
+                                                     pi_instr(30 downto 21) & -- Imm[10:1]
+                                                     '0'                     -- Trailing zero
+                                                    ), word_width));
+    s_unsignedImm_calc <= pi_instr(31 downto 12) & std_logic_vector(to_unsigned(0, 12)); -- Explicitly 12 zeros
 
     -- Opcode als Signal für concurrent assignment
     s_opcode <= pi_instr(6 downto 0);

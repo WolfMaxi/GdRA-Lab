@@ -19,7 +19,7 @@ use work.constant_package.all;
 package types is
   type controlword is record
     ALU_OP       : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0); -- determines the ALU's operation
-    I_IMM_SEL    : std_logic;                                       -- used as a MUX selector for i-Format Immediates
+    I_IMM_SEL    : std_logic_vector(1 downto 0);                                       -- used as a MUX selector for i-Format Immediates
     REG_WRITE    : std_logic;
     A_SEL        : std_logic; -- used as a MUX selector for ALU
     PC_SEL        : std_logic; -- used as a MUX selector for PC
@@ -30,7 +30,7 @@ package types is
   constant control_word_init : controlWord :=
   (
   ALU_OP => (others => '0'),
-  I_IMM_SEL  => '0',
+  I_IMM_SEL  => "00",
   REG_WRITE   => '0',
   A_SEL   => '0',
   PC_SEL   => '0',

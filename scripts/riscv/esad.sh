@@ -13,6 +13,7 @@ ghdl -a --std=08 ../../components/register/controlwordregister.vhdl
 ghdl -a --std=08 ../../components/decoder/decoder.vhdl
 ghdl -a --std=08 ../../components/registerfile/register_file.vhdl
 ghdl -a --std=08 ../../components/multiplexer/gen_mux.vhdl
+ghdl -a --std=08 ../../components/multiplexer/gen_mux_2to1.vhdl
 ghdl -a --std=08 ../../components/signExtender/signExtension.vhdl
 # =============== ALU ===============
 ghdl -a --std=08 ../../components/alu/my_gen_xor.vhdl
