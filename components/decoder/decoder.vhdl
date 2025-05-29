@@ -68,13 +68,23 @@ begin
                 po_controlWord.REG_WRITE <= '1';
                 po_controlWord.WB_SEL <= "00"; -- Register Write Back Selection
             when iFormat =>
-        	v_func7 := pi_instruction(31 downto 25);
+        	    v_func7 := pi_instruction(31 downto 25);
                 v_func3 := pi_instruction(14 downto 12);
                 v_aluOp := v_func7(5) & v_func3;
                 po_controlWord.ALU_OP <= v_aluOp;
                 po_controlWord.I_IMM_SEL <= "01";
+                po_controlWord.A_SEL <= '0';
+                po_controlWord.PC_SEL <= '0'; -- Program Counter Selection
                 po_controlWord.REG_WRITE <= '1';
                 po_controlWord.WB_SEL <= "00"; -- Register Write Back Selection
+                if v_opcode = JALR_INS_OP then
+                    po_controlWord.ALU_OP <= ADD_ALU_OP;
+                    po_controlWord.PC_SEL <= '1'; -- Program Counter Selection
+                    --po_controlWord.A_SEL <= '0'; -- A-Selection for ALU
+                    po_controlWord.WB_SEL <= "10"; -- JALR Write Back Selection
+                elsif v_opcode = L_INS_OP then
+                    po_controlWord.WB_SEL <= "01"; -- Load Write Back Selection
+                end if;
             when uFormat => 
                 if v_opcode = LUI_INS_OP then
                     po_controlWord.ALU_OP <= ADD_ALU_OP;
