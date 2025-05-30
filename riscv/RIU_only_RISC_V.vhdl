@@ -43,16 +43,14 @@ architecture structure of riu_only_RISC_V is
   signal s_id_controlword, s_ex_controlword, s_mem_controlword, s_wb_controlword : controlword := control_word_init;
   signal s_ex_dAddr, s_mem_dAddr, s_wb_dAddr : std_logic_vector(REG_ADR_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Immediate ===========
-  signal s_id_immediate, s_id_jumpImm, s_ex_jumpImm, s_ex_immediate, s_ex_aluOP2_sel : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_id_immediate, s_id_jumpImm, s_ex_jumpImm, s_ex_immediate : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   signal s_mem_immediate, s_wb_immediate : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Execute =============
   signal s_of_aluOP1, s_of_aluOP2, s_ex_aluOP1, s_ex_aluOP2 : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_ex_aluOP1_sel, s_ex_aluOP2_sel : std_logic_vector(WORD_WIDTH - 1 downto 0);
   signal s_ex_aluOut, s_mem_aluOut, s_wb_aluOut : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Write Back ==========
   signal s_wb_writeData : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
-  -- ============ MUXES ============
-  signal s_ex_aluOP1_sel : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0'); -- ALU OP1 MUX
-  
   -- end solution!!
 begin
   ---********************************************************************
