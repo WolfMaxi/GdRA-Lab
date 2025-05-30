@@ -38,13 +38,13 @@ architecture structure of riu_only_RISC_V is
   signal s_pc_currentAddr, s_pc_newAddr : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0'); -- Current and new adress instruction in pc
   signal s_currentInst, s_newInst : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0'); -- Current and new instruction in IF phase
   signal s_id_pc, s_ex_pc : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0'); -- PC+4 for ID and EX phase
-  signal s_id_pcPlus4, s_ex_pcPlus4, s_mem_pcPlus4, s_wb_pcPlus4, s_pc_next_val : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0'); -- PC+4 for ID, EX, MEM and WB phase
+  signal s_ex_pcPlus4, s_mem_pcPlus4, s_wb_pcPlus4, s_pc_newAddr_sel : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0'); -- PC+4 for ID, EX, MEM and WB phase
   -- ============ Pipeline ============
   signal s_id_controlword, s_ex_controlword, s_mem_controlword, s_wb_controlword : controlword := control_word_init;
   signal s_ex_dAddr, s_mem_dAddr, s_wb_dAddr : std_logic_vector(REG_ADR_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Immediate ===========
   signal s_id_immediate, s_id_jumpImm, s_ex_jumpImm, s_ex_immediate, s_ex_aluOP2_sel : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
-  signal s_mem_immediate, s_wb_immediateS : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_mem_immediate, s_wb_immediate : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Execute =============
   signal s_of_aluOP1, s_of_aluOP2, s_ex_aluOP1, s_ex_aluOP2 : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   signal s_ex_aluOut, s_mem_aluOut, s_wb_aluOut : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
@@ -82,7 +82,7 @@ begin
       pi_first => s_pc_newAddr, -- PC+4 for IF phase (PC Adder)
       pi_second => s_mem_aluOut, -- PC+4 for ID phase (Jump instruction)
       pi_sel => s_mem_controlword.PC_SEL, -- Select between PC+4 or ID PC+4
-      pOut => s_pc_next_val
+      pOut => s_pc_newAddr_sel
     );
 
   -- Program counter
@@ -93,7 +93,7 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst,
-      pi_data => s_pc_next_val,
+      pi_data => s_pc_newAddr_sel,
       po_data => s_pc_currentAddr
     );
 
@@ -103,7 +103,6 @@ begin
   ---********************************************************************
   -- begin solution:  
 
-  -- Instruction Cache - holds various instructions from pi_instruction
   INSTRUCTION_CACHE : entity work.instruction_cache(behavior)
     generic map(
       adr_width => ADR_WIDTH,
@@ -145,18 +144,6 @@ begin
       pi_rst => pi_rst,
       pi_data => s_pc_currentAddr,
       po_data => s_id_pc
-    );
-
-  -- PC+4 IF->ID pipeline
-  PC_PLUS4_IF_ID : entity work.PipelineRegister(behavior)
-    generic map(
-      registerWidth => WORD_WIDTH
-    )
-    port map(
-      pi_clk => pi_clk,
-      pi_rst => pi_rst,
-      pi_data => s_pc_newAddr, -- PC+4 for IF phase
-      po_data => s_id_pcPlus4
     );
 
   -- end solution!!
@@ -245,6 +232,19 @@ begin
       po_data => s_ex_pc
     );
 
+  -- PC EX-Phase Adder (adds 4 to PC in EX-Phase)
+  PC_EX_ADDER : entity work.my_gen_n_bit_full_adder(structure)
+    generic map(
+      G_DATA_WIDTH => WORD_WIDTH
+    )
+    port map(
+      pi_a => ADD_FOUR_TO_ADDRESS,
+      pi_b => s_ex_pc,
+      pi_carryIn => '0',
+      po_sum => s_ex_pcPlus4,
+      po_carryOut => open
+    );
+
   ID_EX_JUMP_IMM : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -254,18 +254,6 @@ begin
       pi_rst => pi_rst,
       pi_data => s_id_jumpImm,
       po_data => s_ex_jumpImm
-    );
-
-  -- PC+4 ID->EX pipelining
-  PC_PLUS4_ID_EX : entity work.PipelineRegister(behavior)
-    generic map(
-      registerWidth => WORD_WIDTH
-    )
-    port map(
-      pi_clk => pi_clk,
-      pi_rst => pi_rst,
-      pi_data => s_id_pcPlus4, -- PC+4 for ID phase
-      po_data => s_ex_pcPlus4
     );
 
   -- end solution!!
@@ -320,7 +308,7 @@ begin
     port map(
       pi_in0 => s_ex_aluOP2, -- Register value
       pi_in1 => s_ex_immediate, -- Immediate value
-      pi_in2 => s_ex_jumpImm, -- Placeholder for future use
+      pi_in2 => s_ex_jumpImm,
       pi_in3 => (others => '0'), -- Placeholder for future use
       pi_sel => s_ex_controlword.I_IMM_SEL, -- Select between register or immediate
       pOut => s_ex_aluOP2_sel
@@ -431,7 +419,7 @@ begin
       pi_clk => pi_clk,
       pi_rst => pi_rst,
       pi_data => s_mem_immediate,
-      po_data => s_wb_immediateS
+      po_data => s_wb_immediate
     );
 
   -- PC+4 MEM->WB pipelining
@@ -476,13 +464,14 @@ begin
       po_data => s_wb_aluOut
     );
 
+  -- Write back multiplexer for Registerfile
   WB_SEL_MUX : entity work.gen_mux(behavior)
     generic map(
       dataWidth => WORD_WIDTH
     )
     port map(
       pi_in0 => s_wb_aluOut,
-      pi_in1 => s_wb_immediateS,
+      pi_in1 => s_wb_immediate,
       pi_in2 => s_wb_pcPlus4,
       pi_in3 => (others => '0'), -- Placeholder for future use
       pi_sel => s_wb_controlword.WB_SEL,
