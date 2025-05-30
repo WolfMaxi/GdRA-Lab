@@ -17,8 +17,10 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 use work.constant_package.all;
 
--- Extracts each immediate type from instruction and sign extends them.
--- Immediates are being used for Jump, Branch, Store and Immediate Instructions.
+/*
+    Extracts each immediate type from instruction and sign extends them.
+    Immediates are being used for Jump, Branch, Store and Immediate Instructions.
+*/
 
 entity signExtension is
     -- begin solution:
