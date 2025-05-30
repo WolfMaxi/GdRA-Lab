@@ -1,9 +1,9 @@
 -- Laboratory RA solutions/versuch5
 -- Sommersemester 25
 -- Group Details
--- Lab Date:
--- 1. Participant First and Last Name: 
--- 2. Participant First and Last Name:
+-- Lab Date: 03.06.2025
+-- 1. Participant First and Last Name: Esad-Muhammed Cekmeci
+-- 2. Participant First and Last Name: Maximilian Wolf 
 
 -- ========================================================================
 -- Author:       Marcel Rieß
