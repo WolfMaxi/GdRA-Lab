@@ -1,7 +1,7 @@
 -- Laboratory RA solutions/versuch3
 -- Sommersemester 25
 -- Group Details
--- Lab Date: 13.05.2025
+-- Lab Date: 03.06.2025
 -- 1. Participant First and Last Name: Maximilan Wolf
 -- 2. Participant First and Last Name: Esad-Muhammed Cekmeci
 
@@ -40,16 +40,16 @@ architecture arc of decoder is
 begin
     -- begin solution:
     process (pi_instruction)
-        variable v_insFormat : t_instruction_type := nullFormat;
+        variable v_insFormat : t_instruction_type := nullFormat; --Instruction Format
 
-        variable v_opcode : std_logic_vector(6 downto 0) := (others => '0');
-        variable v_func7 : std_logic_vector(6 downto 0) := (others => '0');
-        variable v_func3 : std_logic_vector(2 downto 0) := (others => '0');
-        variable v_aluOp : std_logic_vector(3 downto 0) := (others => '0');
+        variable v_opcode : std_logic_vector(6 downto 0) := (others => '0'); -- Instruction Opcode
+        variable v_func7 : std_logic_vector(6 downto 0) := (others => '0'); -- Funct7
+        variable v_func3 : std_logic_vector(2 downto 0) := (others => '0'); -- Funct3
+        variable v_aluOp : std_logic_vector(3 downto 0) := (others => '0'); -- ALU Opcode
     begin
         po_controlWord <= control_word_init; -- Reset control word
         v_opcode := pi_instruction(6 downto 0);
-        case v_opcode is
+        case v_opcode is -- Determine Instruction format
             when R_INS_OP => v_insFormat := rFormat;
             when JALR_INS_OP | L_INS_OP | I_INS_OP => v_insFormat := iFormat;
             when S_INS_OP => v_insFormat := sFormat;
@@ -59,15 +59,15 @@ begin
             when others => v_insFormat := nullFormat;
         end case;
         case v_insFormat is
-            when rFormat =>
+            when rFormat => -- R-Format (Register)
                 v_func7 := pi_instruction(31 downto 25);
                 v_func3 := pi_instruction(14 downto 12);
                 v_aluOp := v_func7(5) & v_func3;
                 po_controlWord.ALU_OP <= v_aluOp;
                 po_controlWord.I_IMM_SEL <= "00";
                 po_controlWord.REG_WRITE <= '1';
-                po_controlWord.WB_SEL <= "00"; -- Register Write Back Selection
-            when iFormat =>
+                po_controlWord.WB_SEL <= "00"; -- Register WB sel (ALU)
+            when iFormat => -- I-Format (Immediate)
         	    v_func7 := pi_instruction(31 downto 25);
                 v_func3 := pi_instruction(14 downto 12);
                 v_aluOp := v_func7(5) & v_func3;
@@ -76,7 +76,7 @@ begin
                 po_controlWord.A_SEL <= '0';
                 po_controlWord.PC_SEL <= '0'; -- Program Counter Selection
                 po_controlWord.REG_WRITE <= '1';
-                po_controlWord.WB_SEL <= "00"; -- Register Write Back Selection
+                po_controlWord.WB_SEL <= "00"; -- Register WB sel (ALU)
                 if v_opcode = JALR_INS_OP then
                     po_controlWord.ALU_OP <= ADD_ALU_OP;
                     po_controlWord.PC_SEL <= '1'; -- Program Counter Selection
@@ -85,19 +85,19 @@ begin
                 elsif v_opcode = L_INS_OP then
                     po_controlWord.WB_SEL <= "01"; -- Load Write Back Selection
                 end if;
-            when uFormat => 
+            when uFormat => -- U-Format (Upper Immediate)
                 if v_opcode = LUI_INS_OP then
                     po_controlWord.ALU_OP <= ADD_ALU_OP;
                     po_controlWord.I_IMM_SEL <= "01";
                     po_controlWord.A_SEL <= '0'; -- A-Selection for ALU
                     po_controlWord.REG_WRITE <= '1';
-                    po_controlWord.WB_SEL <= "01";
+                    po_controlWord.WB_SEL <= "01"; -- Register WB sel (Immediate)
                 elsif v_opcode = AUIPC_INS_OP then
                     po_controlWord.ALU_OP <= ADD_ALU_OP;
                     po_controlWord.A_SEL <= '1'; -- A-Selection for ALU
                     po_controlWord.I_IMM_SEL <= "01";
                     po_controlWord.REG_WRITE <= '1';
-                    po_controlWord.WB_SEL <= "00"; -- Register Write Back Selection
+                    po_controlWord.WB_SEL <= "00"; -- Register WB sel (ALU)
                 elsif v_opcode = JAL_INS_OP then
                     po_controlWord.ALU_OP <= ADD_ALU_OP;
                     po_controlWord.I_IMM_SEL <= "10";

@@ -28,12 +28,12 @@ entity riu_only_RISC_V is
 end entity riu_only_RISC_V;
 
 architecture structure of riu_only_RISC_V is
-
   constant PERIOD : time := 10 ns;
   constant ADD_FOUR_TO_ADDRESS : std_logic_vector(WORD_WIDTH - 1 downto 0) := std_logic_vector(to_signed((4), WORD_WIDTH));
 
   -- signals
   -- begin solution:
+
   -- =============== PC ===============
   signal s_pc_currentAddr, s_pc_newAddr : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0'); -- Current and new adress instruction in pc
   signal s_currentInst, s_newInst : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0'); -- Current and new instruction in IF phase
@@ -52,13 +52,15 @@ architecture structure of riu_only_RISC_V is
   signal s_wb_writeData : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ MUXES ============
   signal s_ex_aluOP1_sel : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0'); -- ALU OP1 MUX
+  
   -- end solution!!
 begin
   ---********************************************************************
   ---* program counter adder and pc-register
   ---********************************************************************
+  -- begin solution:
 
-  -- begin solution:  
+  -- Program Counter Adder
   PC_ADDER : entity work.my_gen_n_bit_full_adder(structure)
     generic map(
       G_DATA_WIDTH => WORD_WIDTH
@@ -71,17 +73,19 @@ begin
       po_carryOut => open
     );
 
+  -- PC multiplexer for PC Adder / Jump instructions
   PC_JUMP_MUX : entity work.gen_mux2to1(behavior)
     generic map(
       dataWidth => WORD_WIDTH
     )
     port map(
-      pi_first => s_pc_newAddr, -- PC+4 for IF phase
-      pi_second => s_mem_aluOut, -- PC+4 for ID phase
+      pi_first => s_pc_newAddr, -- PC+4 for IF phase (PC Adder)
+      pi_second => s_mem_aluOut, -- PC+4 for ID phase (Jump instruction)
       pi_sel => s_mem_controlword.PC_SEL, -- Select between PC+4 or ID PC+4
       pOut => s_pc_next_val
     );
 
+  -- Program counter
   PC : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -92,13 +96,14 @@ begin
       pi_data => s_pc_next_val,
       po_data => s_pc_currentAddr
     );
-  -- end solution!!
 
+  -- end solution!!
   ---********************************************************************
   ---* instruction fetch 
   ---********************************************************************
-
   -- begin solution:  
+
+  -- Instruction Cache - holds various instructions from pi_instruction
   INSTRUCTION_CACHE : entity work.instruction_cache(behavior)
     generic map(
       adr_width => ADR_WIDTH,
@@ -112,14 +117,13 @@ begin
       po_instruction => s_newInst
     );
 
-
   -- end solution!!
-
   ---********************************************************************
   ---* Pipeline-Register (IF -> ID) start
   ---********************************************************************
-
   -- begin solution:
+
+  -- Instrution register
   IR : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -130,17 +134,20 @@ begin
       pi_data => s_newInst,
       po_data => s_currentInst
     );
-  PC4_IF_ID : entity work.PipelineRegister(behavior)
+
+  -- PC IF->ID pipeline
+  PC_IF_ID : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
     )
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst,
-      pi_data => s_pc_currentAddr, -- PC+4 for IF phase
+      pi_data => s_pc_currentAddr,
       po_data => s_id_pc
     );
 
+  -- PC+4 IF->ID pipeline
   PC_PLUS4_IF_ID : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -151,13 +158,13 @@ begin
       pi_data => s_pc_newAddr, -- PC+4 for IF phase
       po_data => s_id_pcPlus4
     );
-  -- end solution!!
 
+  -- end solution!!
   ---********************************************************************
   ---* decode phase
   ---********************************************************************
-
   -- begin solution:
+
   INSTRUCTION_DECODER : entity work.decoder(arc)
     generic map(
       word_width => WORD_WIDTH
@@ -166,18 +173,18 @@ begin
       pi_instruction => s_currentInst,
       po_controlWord => s_id_controlword
     );
-  -- end solution!!
 
+  -- end solution!!
   ---********************************************************************
   ---* Immediate sign extension
   ---********************************************************************
-
   -- begin solution:
+
   SIGN_EXTENDER : entity work.signExtension(arc)
     generic map(
       word_width => WORD_WIDTH
     )
-    port map( 
+    port map(
       pi_instr => s_currentInst,
       po_jumpImm => s_id_JumpImm,
       po_branchImm => open,
@@ -186,15 +193,14 @@ begin
       po_storeImm => open,
       po_selectedImm => s_id_immediate -- For ALU operations
     );
-  -- end solution!!
 
+  -- end solution!!
   ---********************************************************************
   ---* Pipeline-Register (ID -> EX) 
   ---********************************************************************
-
   -- begin solution: 
 
-  -- Controlword pipelining
+  -- Controlword ID->EX pipelining
   ID_EX_CONTROLWORD : entity work.ControlWordRegister(arc1)
     port map(
       pi_rst => pi_rst,
@@ -203,7 +209,7 @@ begin
       po_controlWord => s_ex_controlword
     );
 
-  -- D address pipelining
+  -- Dst address ID->EX pipelining
   ID_EX_PIPELINE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => REG_ADR_WIDTH
@@ -215,7 +221,7 @@ begin
       po_data => s_ex_dAddr
     );
 
-  -- Immediate pipelining
+  -- Immediate ID->EX pipelining
   ID_EX_IMMEDIATE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -227,17 +233,18 @@ begin
       po_data => s_ex_immediate
     );
 
-  PC4_ID_EX : entity work.PipelineRegister(behavior)
+  -- PC ID->EX pipelining
+  PC_ID_EX : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
     )
     port map(
-        pi_clk => pi_clk,
-        pi_rst => pi_rst,
-        pi_data => s_id_pc, -- PC+4 for ID phase
-        po_data => s_ex_pc
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_id_pc,
+      po_data => s_ex_pc
     );
- 
+
   ID_EX_JUMP_IMM : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -249,24 +256,25 @@ begin
       po_data => s_ex_jumpImm
     );
 
+  -- PC+4 ID->EX pipelining
   PC_PLUS4_ID_EX : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
     )
     port map(
-        pi_clk => pi_clk,
-        pi_rst => pi_rst,
-        pi_data => s_id_pcPlus4, -- PC+4 for ID phase
-        po_data => s_ex_pcPlus4
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_id_pcPlus4, -- PC+4 for ID phase
+      po_data => s_ex_pcPlus4
     );
 
   -- end solution!!
-
   ---********************************************************************
   ---* execute phase
   ---********************************************************************
-
   -- begin solution:
+
+  -- ALU OP1 OF->EX pipelining
   OP1_REGISTER : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -277,19 +285,22 @@ begin
       pi_data => s_of_aluOP1,
       po_data => s_ex_aluOP1
     );
+
+  -- ALU OP1 Register / PC multiplexer
   OP1_SEL : entity work.gen_mux(behavior)
     generic map(
       dataWidth => WORD_WIDTH
     )
     port map(
-        pi_in0 => s_ex_aluOP1, 
-        pi_in1 => s_ex_pc, --s_ex_pc 
-        pi_in2 => (others => '0'),
-        pi_in3 => (others => '0'), 
-        pi_sel => "0" & s_ex_controlword.A_SEL, 
-        pOut => s_ex_aluOP1_sel
+      pi_in0 => s_ex_aluOP1,
+      pi_in1 => s_ex_pc,
+      pi_in2 => (others => '0'),
+      pi_in3 => (others => '0'),
+      pi_sel => "0" & s_ex_controlword.A_SEL,
+      pOut => s_ex_aluOP1_sel
     );
 
+  -- ALU OP2 OF->EX pipelining
   OP2_REGISTER : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -301,18 +312,18 @@ begin
       po_data => s_ex_aluOP2
     );
 
-  -- Register / Immediate multiplexer  
+  -- ALU OP2 Register / Immediate multiplexer  
   OP2_SEL : entity work.gen_mux(behavior)
     generic map(
       dataWidth => WORD_WIDTH
     )
     port map(
-        pi_in0 => s_ex_aluOP2, -- Register value
-        pi_in1 => s_ex_immediate, -- Immediate value
-        pi_in2 => s_ex_jumpImm, -- Placeholder for future use
-        pi_in3 => (others => '0'), -- Placeholder for future use
-        pi_sel => s_ex_controlword.I_IMM_SEL, -- Select between register or immediate
-        pOut => s_ex_aluOP2_sel
+      pi_in0 => s_ex_aluOP2, -- Register value
+      pi_in1 => s_ex_immediate, -- Immediate value
+      pi_in2 => s_ex_jumpImm, -- Placeholder for future use
+      pi_in3 => (others => '0'), -- Placeholder for future use
+      pi_sel => s_ex_controlword.I_IMM_SEL, -- Select between register or immediate
+      pOut => s_ex_aluOP2_sel
     );
 
   ALU : entity work.my_alu(behavior)
@@ -327,13 +338,14 @@ begin
       po_aluOut => s_ex_aluOut,
       po_carryOut => open
     );
-  -- end solution!!
 
+  -- end solution!!
   ---********************************************************************
   ---* Pipeline-Register (EX -> MEM) 
   ---********************************************************************
-
   -- begin solution:
+
+  -- Controlword EX->MEM pipelining
   EX_MEM_CONTROLWORD : entity work.ControlWordRegister(arc1)
     port map(
       pi_rst => pi_rst,
@@ -341,6 +353,8 @@ begin
       pi_controlWord => s_ex_controlword,
       po_controlWord => s_mem_controlword
     );
+
+  -- Dst adress EX->MEM pipelining
   EX_MEM_PIPELINE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => REG_ADR_WIDTH
@@ -351,7 +365,9 @@ begin
       pi_data => s_ex_dAddr,
       po_data => s_mem_dAddr
     );
-    EX_MEM_IMMEDIATE : entity work.PipelineRegister(behavior)
+
+  -- Immediate EX->MEM pipelining
+  EX_MEM_IMMEDIATE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
     )
@@ -362,6 +378,7 @@ begin
       po_data => s_mem_immediate
     );
 
+  -- PC+4 EX->MEM pipelining
   PC_PLUS4_EX_MEM : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -369,22 +386,22 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst,
-      pi_data => s_ex_pcPlus4, -- PC+4 for EX phase
+      pi_data => s_ex_pcPlus4,
       po_data => s_mem_pcPlus4
     );
 
   -- end solution!!
-
   ---********************************************************************
   ---* memory phase
   ---********************************************************************
   -- begin solution:
   -- end solution!!
-
   ---********************************************************************
   ---* Pipeline-Register (MEM -> WB) 
   ---********************************************************************
   -- begin solution:
+
+  -- Controlword MEM->WB pipelining
   MEM_WB_CONTROLWORD : entity work.ControlWordRegister(arc1)
     port map(
       pi_rst => pi_rst,
@@ -392,6 +409,8 @@ begin
       pi_controlWord => s_mem_controlword,
       po_controlWord => s_wb_controlword
     );
+
+  -- Dst adress MEM->WB pipelining
   MEM_WB_PIPELINE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => REG_ADR_WIDTH
@@ -402,7 +421,9 @@ begin
       pi_data => s_mem_dAddr,
       po_data => s_wb_dAddr
     );
-    MEM_WB_IMMEDIATE : entity work.PipelineRegister(behavior)
+
+  -- Immediate MEM->WB pipelining
+  MEM_WB_IMMEDIATE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
     )
@@ -413,7 +434,8 @@ begin
       po_data => s_wb_immediateS
     );
 
-    PC_PLUS4_MEM_WB : entity work.PipelineRegister(behavior)
+  -- PC+4 MEM->WB pipelining
+  PC_PLUS4_MEM_WB : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
     )
@@ -425,12 +447,12 @@ begin
     );
 
   -- end solution!!
-
   ---********************************************************************
   ---* write back phase
   ---********************************************************************
   -- begin solution:
 
+  -- ALU out EX->MEM pipelining
   EX_MEM_ALU_PIPELINE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -442,6 +464,7 @@ begin
       po_data => s_mem_aluOut
     );
 
+  -- ALU out MEM->WB pipelining
   MEM_WB_ALU_PIPELINE : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -452,21 +475,21 @@ begin
       pi_data => s_mem_aluOut,
       po_data => s_wb_aluOut
     );
-    WB_SEL_MUX : entity work.gen_mux(behavior)
+
+  WB_SEL_MUX : entity work.gen_mux(behavior)
     generic map(
       dataWidth => WORD_WIDTH
     )
     port map(
-        pi_in0 => s_wb_aluOut,
-        pi_in1 => s_wb_immediateS,
-        pi_in2 => s_wb_pcPlus4, 
-        pi_in3 => (others => '0'), -- Placeholder for future use
-        pi_sel => s_wb_controlword.WB_SEL,
-        pOut => s_wb_writeData
+      pi_in0 => s_wb_aluOut,
+      pi_in1 => s_wb_immediateS,
+      pi_in2 => s_wb_pcPlus4,
+      pi_in3 => (others => '0'), -- Placeholder for future use
+      pi_sel => s_wb_controlword.WB_SEL,
+      pOut => s_wb_writeData
     );
 
   -- end solution!!
-
   ---********************************************************************
   ---* register file (negative clock)
   ---********************************************************************
@@ -489,6 +512,7 @@ begin
       po_readRegData2 => s_of_aluOP2,
       po_registerOut => po_registersOut
     );
+
   -- end solution!!
   ---********************************************************************
 end architecture;

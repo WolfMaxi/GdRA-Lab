@@ -1,7 +1,7 @@
 -- Laboratory RA solutions/versuch1
 -- Sommer Semester 25
 -- Group Details
--- Lab Date: 29.04.2025
+-- Lab Date: 03.06.2025
 -- 1. Participant First and  Last Name: Maximilian Wolf
 -- 2. Participant First and Last Name: Esad-Muhammed Cekmeci
  
@@ -22,9 +22,7 @@ entity gen_mux is
         dataWidth: integer := DATA_WIDTH_GEN
     );
     port (
-        --pi_first, pi_second: in STD_LOGIC_VECTOR(dataWidth - 1 downto 0) := (others => '0');
         pi_in0, pi_in1, pi_in2, pi_in3: in STD_LOGIC_VECTOR(dataWidth - 1 downto 0) := (others => '0');
-        --pi_sel: in STD_LOGIC := '0';
         pi_sel: in STD_LOGIC_VECTOR(1 downto 0) := (others => '0'); -- 2-bit selector for 4 inputs
         pOut: out STD_LOGIC_VECTOR(dataWidth - 1 downto 0) := (others => '0')
     );
@@ -44,7 +42,7 @@ begin
             when "11" =>
                 pOut <= pi_in3;
             when others =>
-                pOut <= (others => '0'); -- Default case, should not happen
+                pOut <= (others => '0');
         end case;
     end process;
 end behavior;
