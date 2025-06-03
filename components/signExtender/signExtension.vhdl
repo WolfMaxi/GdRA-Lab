@@ -60,13 +60,16 @@ begin
     s_opcode <= pi_instr(6 downto 0);
 
     -- Signal assignment for selected immediate
-    po_selectedImm <= s_immediateImm when (s_opcode = I_INS_OP or s_opcode = L_INS_OP or s_opcode = JALR_INS_OP) else
-                      s_storeImm when (s_opcode = S_INS_OP) else
-                      s_branchImm when (s_opcode = B_INS_OP) else
-                      s_unsignedImm when (s_opcode = LUI_INS_OP or s_opcode = AUIPC_INS_OP) else
-                      s_jumpImm when (s_opcode = JAL_INS_OP) else
-                      (others => '0');
 
+    with s_opcode select
+      po_selectedImm <=
+        s_immediateImm   when I_INS_OP | L_INS_OP | JALR_INS_OP,
+        s_storeImm       when S_INS_OP,
+        s_branchImm      when B_INS_OP,
+        s_unsignedImm    when LUI_INS_OP |AUIPC_INS_OP,
+        s_jumpImm        when JAL_INS_OP,
+        (others => '0')  when others;
+    
     -- Set immediates for eatch type
     po_immediateImm <= s_immediateImm;
     po_storeImm <= s_storeImm;
