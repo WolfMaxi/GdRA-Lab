@@ -20,10 +20,10 @@ use work.constant_package.all;
 use work.types.all;
 use work.util_asm_package.all;
 
-entity R_only_RISC_V_2_tb is
-end entity R_only_RISC_V_2_tb;
+entity r_only_RISC_V_2_tb is
+end entity r_only_RISC_V_2_tb;
 
-architecture structure of R_only_RISC_V_2_tb is
+architecture structure of r_only_RISC_V_2_tb is
 
   constant PERIOD : time := 10 ns;
   -- signals

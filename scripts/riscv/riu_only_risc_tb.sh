@@ -25,7 +25,7 @@ ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_shifter
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_comparator.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_alu.vhdl"
 # ===================================
-ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}riscv/RIU_only_RISC_V.vhdl"
-ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}testbenches/riscv/RIU_only_RISC_V_tb.vhdl"
-ghdl -e --std=08 --workdir="${workdir}vhdl" RIU_only_RISC_V_tb
-ghdl -r --std=08 --workdir="${workdir}vhdl" RIU_only_RISC_V_tb --wave="${workdir}vhdl/vcd/riu-only_riscv.ghw" --vcd="${workdir}vhdl/vcd/riu-only_riscv.vcd"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}riscv/riu_only_RISC_V.vhdl"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}testbenches/riscv/riu_only_RISC_V_tb.vhdl"
+ghdl -e --std=08 --workdir="${workdir}vhdl" riu_only_RISC_V_tb
+ghdl -r --std=08 --workdir="${workdir}vhdl" riu_only_RISC_V_tb --wave="${workdir}vhdl/vcd/riu-only_riscv.ghw" --vcd="${workdir}vhdl/vcd/riu-only_riscv.vcd"

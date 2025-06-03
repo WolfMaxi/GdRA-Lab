@@ -1,4 +1,4 @@
--- Laboratory RA solutions/versuch6
+-- Laboratory RA solutions/versuch7
 -- Sommersemester 25
 -- Group Details
 -- Lab Date:
@@ -21,8 +21,11 @@ package types is
     ALU_OP       : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0); -- determines the ALU's operation
     I_IMM_SEL    : std_logic;                                       -- used as a MUX selector for i-Format Immediates
     REG_WRITE    : std_logic;
+    CMP_RESULT   : std_logic;
+    IS_BRANCH    : std_logic;
+    IS_JUMP    : std_logic;
     A_SEL        : std_logic; -- used as a MUX selector for ALU
-    PC_SEL       : std_logic; -- used as a MUX selector for PC
+    PC_SEL        : std_logic; -- used as a MUX selector for PC
     WB_SEL       :std_logic_vector( 1 downto 0);
   end record controlWord;
 
@@ -33,7 +36,10 @@ package types is
   I_IMM_SEL  => '0',
   REG_WRITE   => '0',
   A_SEL   => '0',
+  IS_BRANCH => '0',
+  CMP_RESULT => '0',
   PC_SEL   => '0',
+  IS_JUMP => '0',
   WB_SEL   => "00"
   );
 

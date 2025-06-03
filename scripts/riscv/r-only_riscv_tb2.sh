@@ -23,6 +23,6 @@ ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_compara
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_alu.vhdl"
 # ===================================
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}riscv/R_only_RISC_V.vhdl"
-ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}testbenches/riscv/R_only_RISC_V_2_tb.vhdl"
-ghdl -e --std=08 --workdir="${workdir}vhdl" R_only_RISC_V_2_tb
-ghdl -r --std=08 --workdir="${workdir}vhdl" R_only_RISC_V_2_tb --wave="${workdir}vhdl/vcd/r-only_riscv2.ghw" --vcd="${workdir}vhdl/vcd/r-only_riscv2.vcd"
+ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}testbenches/riscv/r_only_RISC_V_2_tb.vhdl"
+ghdl -e --std=08 --workdir="${workdir}vhdl" r_only_RISC_V_2_tb
+ghdl -r --std=08 --workdir="${workdir}vhdl" r_only_RISC_V_2_tb --wave="${workdir}vhdl/vcd/r-only_riscv2.ghw" --vcd="${workdir}vhdl/vcd/r-only_riscv2.vcd"
