@@ -74,12 +74,11 @@ begin
                 po_controlWord.ALU_OP <= v_aluOp;
                 po_controlWord.I_IMM_SEL <= '1';
                 po_controlWord.A_SEL <= '0';
-                po_controlWord.PC_SEL <= '0'; -- Program Counter Selection
                 po_controlWord.REG_WRITE <= '1';
                 po_controlWord.WB_SEL <= "00"; -- Register WB sel (ALU)
                 if v_opcode = JALR_INS_OP then
                     po_controlWord.ALU_OP <= ADD_ALU_OP;
-                    po_controlWord.PC_SEL <= '1'; -- Program Counter Selection
+                    po_controlWord.IS_JUMP <= '1';
                     po_controlWord.WB_SEL <= "10"; -- JALR Write Back Selection
                 elsif v_opcode = L_INS_OP then
                     po_controlWord.WB_SEL <= "01"; -- Load Write Back Selection
@@ -102,7 +101,7 @@ begin
                     po_controlWord.I_IMM_SEL <= '1';
                     po_controlWord.A_SEL <= '1'; -- A-Selection for ALU
                     po_controlWord.REG_WRITE <= '1';
-                    po_controlWord.PC_SEL <= '1'; -- Program Counter Selection
+                    po_controlWord.IS_JUMP <= '1';
                     po_controlWord.WB_SEL <= "10"; -- JAL Write Back Selection
                 else
                     po_controlWord <= control_word_init; -- Reset control word for unknown uFormat

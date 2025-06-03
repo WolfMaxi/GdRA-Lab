@@ -18,7 +18,7 @@ begin
         variable branch: std_logic := '0';
     begin
         branch := pi_controlWord.IS_BRANCH and (pi_zero xor pi_controlWord.CMP_RESULT);
-        if pi_controlWord.PC_SEL then
+        if pi_controlWord.IS_JUMP then
             po_pc_sel <= "01"; -- Jump
         elsif pi_controlWord.IS_BRANCH then
             if branch = '1' then
