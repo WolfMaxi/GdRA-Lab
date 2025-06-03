@@ -1,7 +1,7 @@
 -- Laboratory RA solutions/versuch3
 -- Sommersemester 25
 -- Group Details
--- Lab Date: 13.06.2025
+-- Lab Date: 03.06.2025
 -- 1. Participant First and Last Name: Maximilian Wolf
 -- 2. Participant First and Last Name: Esad-Muhammed Cekmeci
 
@@ -14,62 +14,66 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 use work.constant_package.all;
 
-entity signExtension is --bitbreite des werts wird erweitert min signExtension
+/*
+    Extracts each immediate type from instruction and sign extends them.
+    Immediates are being used for Jump, Branch, Store and Immediate Instructions.
+*/
+
+entity signExtension is
     -- begin solution:
     generic (
         word_width : integer := WORD_WIDTH
     );
-    port ( --immedate um direkt in der Instruktion erhalten 
+    port (
         pi_instr : in std_logic_vector(word_width - 1 downto 0) := (others => '0');
         po_jumpImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0');
         po_branchImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0');
         po_unsignedImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0'); --für adressberechnung
         po_immediateImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0');
-        po_storeImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0')
+        po_storeImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0');
+        po_selectedImm : out std_logic_vector(word_width - 1 downto 0) := (others => '0') --für ALU-Operationen
     );
     -- end solution!!
 end entity signExtension;
 
 architecture arc of signExtension is
-    -- begin solution:
-    --signal s_jumpImm : std_logic_vector(20 downto 0) := (others => '0');
-    --signal s_branchImm : std_logic_vector(12 downto 0) := (others => '0');
-    --signal s_immediateImm : std_logic_vector(11 downto 0) := (others => '0');
-    --signal s_storeImm : std_logic_vector(11 downto 0) := (others => '0');
-
+    signal s_immediateImm : std_logic_vector(word_width - 1 downto 0);
+    signal s_storeImm : std_logic_vector(word_width - 1 downto 0);
+    signal s_branchImm : std_logic_vector(word_width - 1 downto 0);
+    signal s_jumpImm : std_logic_vector(word_width - 1 downto 0);
+    signal s_unsignedImm : std_logic_vector(word_width - 1 downto 0);
+    signal s_opcode : std_logic_vector(6 downto 0);
 begin
-    process (pi_instr)
-        variable v_immediateImm : signed (11 downto 0) := (others => '0'); --ALU-Operationen
-        variable v_storeImm : signed (11 downto 0) := (others => '0'); --Speicheroperationen
-        variable v_branchImm : signed (12 downto 0) := (others => '0'); --Sprung- und Verzweigungsoperationen
-        variable v_jumpImm : signed (20 downto 0) := (others => '0'); --Sprungoperationen
+    -- Deconstruct each immediate type from instruction
+    s_immediateImm <= std_logic_vector(resize(signed(pi_instr(31 downto 20)), word_width));
+    s_storeImm <= std_logic_vector(resize(signed(pi_instr(31 downto 25) & pi_instr(11 downto 7)), word_width));
+    s_branchImm <= std_logic_vector(resize(signed(pi_instr(31) & pi_instr(7) & pi_instr(30 downto 25) & pi_instr(11 downto 8) & '0'), word_width));
+    s_jumpImm <= std_logic_vector(resize(signed(pi_instr(31) & pi_instr(19 downto 12) & pi_instr(20) & pi_instr(30 downto 21) & '0'), word_width));
+    s_unsignedImm <= pi_instr(word_width - 1 downto 12) & (11 downto 0 => '0');
+    s_jumpImm <= std_logic_vector(resize(signed(pi_instr(31) & pi_instr(19 downto 12) & pi_instr(20) & pi_instr(30 downto 21) & '0'), word_width));
+    s_unsignedImm <= pi_instr(31 downto 12) & std_logic_vector(to_unsigned(0, 12)); -- Explicitly 12 zeros
 
-    begin
-        v_immediateImm := signed(pi_instr(31 downto 20)); --12 bit extrahierung, interpretation als signed 
-        po_immediateImm <= std_logic_vector(resize(v_immediateImm, word_width)); --Wert wird auf word_width erweitert
-        --signed und resize , um wert auf korrekte breite zu bringen
-        v_storeImm := signed(pi_instr(31 downto 25) & pi_instr(11 downto 7));
-        po_storeImm <= std_logic_vector(resize(v_storeImm, word_width));
-        --signed für vorzeichen behaftet
-        v_branchImm := signed(pi_instr(31) & pi_instr(7) & pi_instr(30 downto 25) & pi_instr(11 downto 8) & '0');
-        po_branchImm <= std_logic_vector(resize(v_branchImm, word_width));
-        --unsigned für vorzeichenlos
-        v_jumpImm := signed(pi_instr(31) & pi_instr(19 downto 12) & pi_instr(20) & pi_instr(30 downto 21) & '0');
-        po_jumpImm <= std_logic_vector(resize(v_jumpImm, word_width));
+    -- Opcode for selecting immediate
+    s_opcode <= pi_instr(6 downto 0);
 
-        po_unsignedImm <= pi_instr(word_width - 1 downto 12) & (11 downto 0 => '0'); --extrahierung der oberen bits
-    end process;
-    -- end solution!!
+    -- Signal assignment for selected immediate
+
+    with s_opcode select
+      po_selectedImm <=
+        s_immediateImm   when I_INS_OP | L_INS_OP | JALR_INS_OP,
+        s_storeImm       when S_INS_OP,
+        s_branchImm      when B_INS_OP,
+        s_unsignedImm    when LUI_INS_OP |AUIPC_INS_OP,
+        s_jumpImm        when JAL_INS_OP,
+        (others => '0')  when others;
+    
+    -- Set immediates for eatch type
+    po_immediateImm <= s_immediateImm;
+    po_storeImm <= s_storeImm;
+    po_branchImm <= s_branchImm;
+    po_jumpImm <= s_jumpImm;
+    po_unsignedImm <= s_unsignedImm;
 end architecture arc;
-
---Wieso immedate-werte? Um direkt in der Instruktion erhalten um nicht extra in register zu speichern
---Arithmetische Operationen auf den Werten
---Sprung- und Verzweigung
---Speicheroperationen um die adresse für den Speicherzugiff zu brechnen 
-
---Wieso ist die erweiterung der Breite notwendig?
---stellt sicher das auch kleinere werte in 32-bit register gespeichert werden können
---bei negativen adresse stellt sicher das diese in einem größeren Adressraum Interpretiert werden
-

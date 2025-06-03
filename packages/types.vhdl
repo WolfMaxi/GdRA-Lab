@@ -22,7 +22,7 @@ package types is
     I_IMM_SEL    : std_logic;                                       -- used as a MUX selector for i-Format Immediates
     REG_WRITE    : std_logic;
     A_SEL        : std_logic; -- used as a MUX selector for ALU
-    PC_SEL        : std_logic; -- used as a MUX selector for PC
+    PC_SEL       : std_logic; -- used as a MUX selector for PC
     WB_SEL       :std_logic_vector( 1 downto 0);
   end record controlWord;
 
