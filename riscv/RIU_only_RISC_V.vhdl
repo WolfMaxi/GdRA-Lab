@@ -43,8 +43,7 @@ architecture structure of riu_only_RISC_V is
   signal s_id_controlword, s_ex_controlword, s_mem_controlword, s_wb_controlword : controlword := control_word_init;
   signal s_ex_dAddr, s_mem_dAddr, s_wb_dAddr : std_logic_vector(REG_ADR_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Immediate ===========
-  signal s_id_immediate, s_id_jumpImm, s_ex_jumpImm, s_ex_immediate : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
-  signal s_mem_immediate, s_wb_immediate : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_id_immediate, s_ex_immediate, s_mem_immediate, s_wb_immediate : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Execute =============
   signal s_of_aluOP1, s_of_aluOP2, s_ex_aluOP1, s_ex_aluOP2 : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   signal s_ex_aluOP1_sel, s_ex_aluOP2_sel : std_logic_vector(WORD_WIDTH - 1 downto 0);
@@ -171,7 +170,7 @@ begin
     )
     port map(
       pi_instr => s_currentInst,
-      po_jumpImm => s_id_JumpImm,
+      po_jumpImm => open,
       po_branchImm => open,
       po_unsignedImm => open,
       po_immediateImm => open, -- For address calculation
@@ -243,17 +242,6 @@ begin
       po_carryOut => open
     );
 
-  ID_EX_JUMP_IMM : entity work.PipelineRegister(behavior)
-    generic map(
-      registerWidth => WORD_WIDTH
-    )
-    port map(
-      pi_clk => pi_clk,
-      pi_rst => pi_rst,
-      pi_data => s_id_jumpImm,
-      po_data => s_ex_jumpImm
-    );
-
   -- end solution!!
   ---********************************************************************
   ---* execute phase
@@ -299,15 +287,13 @@ begin
     );
 
   -- ALU OP2 Register / Immediate multiplexer  
-  OP2_SEL : entity work.gen_mux(behavior)
+  OP2_SEL : entity work.gen_mux2to1(behavior)
     generic map(
       dataWidth => WORD_WIDTH
     )
     port map(
-      pi_in0 => s_ex_aluOP2, -- Register value
-      pi_in1 => s_ex_immediate, -- Immediate value
-      pi_in2 => s_ex_jumpImm,
-      pi_in3 => (others => '0'), -- Placeholder for future use
+      pi_first => s_ex_aluOP2, -- Register value
+      pi_second => s_ex_immediate, -- Immediate value
       pi_sel => s_ex_controlword.I_IMM_SEL, -- Select between register or immediate
       pOut => s_ex_aluOP2_sel
     );
