@@ -19,7 +19,6 @@ begin
     begin
         branch := pi_controlWord.IS_BRANCH and (pi_zero xor pi_controlWord.CMP_RESULT);
         if branch = '1' then
-            report "Branch";
             po_pc_sel <= "10"; -- Branch
         elsif pi_controlWord.IS_JUMP = '1' then
             po_pc_sel <= "01"; -- Jump
