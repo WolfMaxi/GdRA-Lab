@@ -18,14 +18,11 @@ begin
         variable branch: std_logic := '0';
     begin
         branch := pi_controlWord.IS_BRANCH and (pi_zero xor pi_controlWord.CMP_RESULT);
-        if pi_controlWord.IS_JUMP then
+        if branch = '1' then
+            report "Branch";
+            po_pc_sel <= "10"; -- Branch
+        elsif pi_controlWord.IS_JUMP = '1' then
             po_pc_sel <= "01"; -- Jump
-        elsif pi_controlWord.IS_BRANCH then
-            if branch = '1' then
-                po_pc_sel <= "10"; -- Branch taken
-            else
-                po_pc_sel <= "00"; -- Branch not taken
-            end if;
         else
             po_pc_sel <= "00"; -- PC+4
         end if;

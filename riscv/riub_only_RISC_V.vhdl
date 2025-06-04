@@ -49,7 +49,7 @@ architecture structure of riub_only_RISC_V is
   signal s_ex_aluOP1_sel, s_ex_aluOP2_sel : std_logic_vector(WORD_WIDTH - 1 downto 0);
   signal s_ex_aluOut, s_mem_aluOut, s_wb_aluOut : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Branch =============
-  signal s_zero: std_logic := '0';
+  signal s_ex_zero: std_logic := '0';
   signal s_ex_pc_sel, s_mem_pc_sel: std_logic_vector(1 downto 0) := (others => '0');
   signal s_ex_branch, s_mem_branch: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Write Back ==========
@@ -315,20 +315,20 @@ begin
       pi_aluOP => s_ex_controlword.ALU_OP,
       po_aluOut => s_ex_aluOut,
       po_carryOut => open,
-      po_zero => s_zero
+      po_zero => s_ex_zero
     );
 
-    BRANCH_ADDER : entity work.my_gen_n_bit_full_adder(structure)
-      generic map(
-        G_DATA_WIDTH => WORD_WIDTH
-      )
-      port map(
-        pi_a => s_ex_aluOut,
-        pi_b => s_ex_immediate,
-        pi_carryIn => '0',
-        po_sum => s_ex_branch,
-        po_carryOut => open
-      );
+  BRANCH_ADDER : entity work.my_gen_n_bit_full_adder(structure)
+    generic map(
+      G_DATA_WIDTH => WORD_WIDTH
+    )
+    port map(
+      pi_a => s_ex_aluOut,
+      pi_b => s_ex_immediate,
+      pi_carryIn => '0',
+      po_sum => s_ex_branch,
+      po_carryOut => open
+    );
 
   -- end solution!!
   ---********************************************************************
@@ -338,7 +338,7 @@ begin
   PC_SEL_ENCODER: entity work.pc_sel_encoder(behavior)
       port map(
         pi_controlWord => s_ex_controlword,
-        pi_zero => s_zero,
+        pi_zero => s_ex_zero,
         po_pc_sel => s_ex_pc_sel
       );
 
