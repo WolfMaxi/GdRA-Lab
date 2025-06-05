@@ -49,11 +49,12 @@ architecture structure of riub_only_RISC_V is
   signal s_ex_aluOP1_sel, s_ex_aluOP2_sel : std_logic_vector(WORD_WIDTH - 1 downto 0);
   signal s_ex_aluOut, s_mem_aluOut, s_wb_aluOut : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Branch =============
-  signal s_ex_zero: std_logic := '0';
-  signal s_ex_pc_sel, s_mem_pc_sel: std_logic_vector(1 downto 0) := (others => '0');
-  signal s_ex_branch, s_mem_branch: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_ex_pc_sel, s_mem_pc_sel, s_ex_zero, s_test: std_logic := '0';
+  signal s_pc_branch_sel: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_ex_branchAddr, s_mem_branchAddr: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Write Back ==========
   signal s_wb_writeData : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+
   -- end solution!!
 begin
   ---********************************************************************
@@ -74,18 +75,28 @@ begin
       po_carryOut => open
     );
 
-  -- PC multiplexer for PC Adder / Jump instructions
-  PC_SEL : entity work.gen_mux(behavior)
+  -- PC multiplexer for (PC Adder / Branch) instructions
+  PC_JUMP_SEL : entity work.gen_mux2to1(behavior)
     generic map(
       dataWidth => WORD_WIDTH
     )
     port map(
-      pi_in0 => s_pc_newAddr, -- PC+4 for IF phase (PC Adder)
-      pi_in1 => s_mem_aluOut, -- PC+4 for ID phase (Jump instruction)
-      pi_in2 => s_mem_branch,
-      pi_in3 => open,
-      pi_sel => s_mem_pc_sel, -- Select between PC+4 or ID PC+4
+      pi_first => s_pc_branch_sel,
+      pi_second => s_mem_aluOut,
+      pi_sel => s_mem_controlword.PC_SEL,
       pOut => s_pc_newAddr_sel
+    );
+
+  -- PC multiplexer for PC Adder / Branch instructions
+  PC_BRANCH_SEL : entity work.gen_mux2to1(behavior)
+    generic map(
+      dataWidth => WORD_WIDTH
+    )
+    port map(
+      pi_first => s_pc_newAddr,
+      pi_second => s_mem_branchAddr,
+      pi_sel => s_mem_pc_sel,
+      pOut => s_pc_branch_sel
     );
 
   -- Program counter
@@ -326,21 +337,27 @@ begin
       pi_a => s_ex_aluOut,
       pi_b => s_ex_immediate,
       pi_carryIn => '0',
-      po_sum => s_ex_branch,
+      po_sum => s_ex_branchAddr,
       po_carryOut => open
     );
 
   -- end solution!!
   ---********************************************************************
-  ---* PC selection encoder
+  ---* PC branch selection
   ---********************************************************************
+  
+  s_test <= s_ex_controlword.CMP_RESULT;
+  s_ex_pc_sel <= s_ex_controlword.IS_BRANCH and (s_ex_zero xor s_ex_controlword.CMP_RESULT);
 
-  PC_SEL_ENCODER: entity work.pc_sel_encoder(behavior)
-      port map(
-        pi_controlWord => s_ex_controlword,
-        pi_zero => s_ex_zero,
-        po_pc_sel => s_ex_pc_sel
-      );
+  -- Pipeline Branch Selection
+  process (pi_clk, pi_rst)
+  begin
+      if (pi_rst) then
+          s_mem_pc_sel <= '0';
+      elsif rising_edge (pi_clk) then --bei Sprung Register reset
+          s_mem_pc_sel <= s_ex_pc_sel;
+      end if;
+  end process;
 
   ---********************************************************************
   ---* Pipeline-Register (EX -> MEM) 
@@ -399,19 +416,8 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst,
-      pi_data => s_ex_branch,
-      po_data => s_mem_branch
-    );
-
-  EX_MEM_PC_SEL : entity work.PipelineRegister(behavior)
-    generic map(
-      registerWidth => 2
-    )
-    port map(
-      pi_clk => pi_clk,
-      pi_rst => pi_rst,
-      pi_data => s_ex_pc_sel,
-      po_data => s_mem_pc_sel
+      pi_data => s_ex_branchAddr,
+      po_data => s_mem_branchAddr
     );
 
   -- end solution!!
