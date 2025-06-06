@@ -12,6 +12,16 @@
 --               support only R/I/U-Instructions. 
 -- ========================================================================
 
+
+-- Flushing Konzept
+-- 
+-- Das Flushing unserer RISCV Implementierung erfolgt dadurch, dass bei einem Jump oder Branch
+-- Befehl s_ex_pc_sel auf 1 gesetzt wird, und dieses Signal durch einen process zu s_mem_pc_sel
+-- gepipelined wird. Alle Pipeline Register bis EX (IF->ID, OF->EX & ID->EX) werden dann in der
+-- MEM-Phase mithilfe des Reset Signals geflushed, da diese aufgrund der neuen Adresse noch alte
+-- und ungültige Instruktionen enthalten.
+
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -49,9 +59,9 @@ architecture structure of riub_only_RISC_V is
   signal s_ex_aluOP1_sel, s_ex_aluOP2_sel : std_logic_vector(WORD_WIDTH - 1 downto 0);
   signal s_ex_aluOut, s_mem_aluOut, s_wb_aluOut : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Branch =============
-  signal s_ex_pc_sel, s_mem_pc_sel, s_ex_zero, s_test: std_logic := '0';
-  signal s_pc_branch_sel: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
-  signal s_ex_branchAddr, s_mem_branchAddr: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_ex_pc_sel, s_mem_pc_sel, s_ex_zero : std_logic := '0';
+  signal s_pc_branch_sel : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_ex_branchAddr, s_mem_branchAddr : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Write Back ==========
   signal s_wb_writeData : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
 
@@ -337,7 +347,7 @@ begin
   ---********************************************************************
   ---* PC branch selection
   ---********************************************************************
-  
+
   BRANCH_ADDER : entity work.my_gen_n_bit_full_adder(structure)
     generic map(
       G_DATA_WIDTH => WORD_WIDTH
@@ -350,17 +360,16 @@ begin
       po_carryOut => open
     );
 
-  s_test <= s_ex_controlword.CMP_RESULT;
   s_ex_pc_sel <= s_ex_controlword.IS_BRANCH and (s_ex_zero xor s_ex_controlword.CMP_RESULT);
 
   -- Pipeline Branch Selection
   process (pi_clk, pi_rst)
   begin
-      if (pi_rst) then
-          s_mem_pc_sel <= '0';
-      elsif rising_edge (pi_clk) then --bei Sprung Register reset
-          s_mem_pc_sel <= s_ex_pc_sel;
-      end if;
+    if (pi_rst) then
+      s_mem_pc_sel <= '0';
+    elsif rising_edge (pi_clk) then --bei Sprung Register reset
+      s_mem_pc_sel <= s_ex_pc_sel;
+    end if;
   end process;
 
   s_flush <= (s_mem_pc_sel or s_mem_controlword.PC_SEL) and not pi_rst;
