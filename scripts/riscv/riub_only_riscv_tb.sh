@@ -17,7 +17,6 @@ ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/registerfile/r
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/multiplexer/gen_mux.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/multiplexer/gen_mux2to1.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/signExtender/signExtension.vhdl"
-ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/encoder/pc_sel_encoder.vhdl"
 # =============== ALU ===============
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_xor.vhdl"
 ghdl -a --std=08 --workdir="${workdir}vhdl" "${workdir}components/alu/my_gen_or.vhdl"

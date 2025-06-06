@@ -55,6 +55,8 @@ architecture structure of riub_only_RISC_V is
   -- ============ Write Back ==========
   signal s_wb_writeData : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
 
+  signal s_flush : std_logic := '0';
+
   -- end solution!!
 begin
   ---********************************************************************
@@ -76,7 +78,7 @@ begin
     );
 
   -- PC multiplexer for (PC Adder / Branch) instructions
-  PC_JUMP_SEL : entity work.gen_mux2to1(behavior)
+  PC_SEL : entity work.gen_mux2to1(behavior)
     generic map(
       dataWidth => WORD_WIDTH
     )
@@ -130,12 +132,6 @@ begin
       po_instruction => s_newInst
     );
 
-  -- end solution!!
-  ---********************************************************************
-  ---* Pipeline-Register (IF -> ID) start
-  ---********************************************************************
-  -- begin solution:
-
   -- Instrution register
   IR : entity work.PipelineRegister(behavior)
     generic map(
@@ -143,10 +139,16 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_data => s_newInst,
       po_data => s_currentInst
     );
+
+  -- end solution!!
+  ---********************************************************************
+  ---* Pipeline-Register (IF -> ID) start
+  ---********************************************************************
+  -- begin solution:
 
   -- PC IF->ID pipeline
   PC_IF_ID : entity work.PipelineRegister(behavior)
@@ -155,7 +157,7 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_data => s_pc_currentAddr,
       po_data => s_id_pc
     );
@@ -190,9 +192,9 @@ begin
       po_jumpImm => open,
       po_branchImm => open,
       po_unsignedImm => open,
-      po_immediateImm => open, -- For address calculation
+      po_immediateImm => open,
       po_storeImm => open,
-      po_selectedImm => s_id_immediate -- For ALU operations
+      po_selectedImm => s_id_immediate
     );
 
   -- end solution!!
@@ -204,7 +206,7 @@ begin
   -- Controlword ID->EX pipelining
   ID_EX_CONTROLWORD : entity work.ControlWordRegister(arc1)
     port map(
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_clk => pi_clk,
       pi_controlWord => s_id_controlword,
       po_controlWord => s_ex_controlword
@@ -217,7 +219,7 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_data => s_currentInst(11 downto 7), -- Extract dst address from instruction
       po_data => s_ex_dAddr
     );
@@ -229,7 +231,7 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_data => s_id_immediate,
       po_data => s_ex_immediate
     );
@@ -241,7 +243,7 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_data => s_id_pc,
       po_data => s_ex_pc
     );
@@ -265,6 +267,8 @@ begin
   ---********************************************************************
   -- begin solution:
 
+  -- ==== ALU OP1 ====
+
   -- ALU OP1 OF->EX pipelining
   OP1_REGISTER : entity work.PipelineRegister(behavior)
     generic map(
@@ -272,24 +276,24 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_data => s_of_aluOP1,
       po_data => s_ex_aluOP1
     );
 
   -- ALU OP1 Register / PC multiplexer
-  OP1_SEL : entity work.gen_mux(behavior)
+  OP1_SEL : entity work.gen_mux2to1(behavior)
     generic map(
       dataWidth => WORD_WIDTH
     )
     port map(
-      pi_in0 => s_ex_aluOP1,
-      pi_in1 => s_ex_pc,
-      pi_in2 => (others => '0'),
-      pi_in3 => (others => '0'),
-      pi_sel => "0" & s_ex_controlword.A_SEL,
+      pi_first => s_ex_aluOP1, -- Register
+      pi_second => s_ex_pc, -- Program counter
+      pi_sel => s_ex_controlword.A_SEL, -- Select between Register / PC
       pOut => s_ex_aluOP1_sel
     );
+
+  -- ==== ALU OP2 ====
 
   -- ALU OP2 OF->EX pipelining
   OP2_REGISTER : entity work.PipelineRegister(behavior)
@@ -298,7 +302,7 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_data => s_of_aluOP2,
       po_data => s_ex_aluOP2
     );
@@ -329,23 +333,23 @@ begin
       po_zero => s_ex_zero
     );
 
+  -- end solution!!
+  ---********************************************************************
+  ---* PC branch selection
+  ---********************************************************************
+  
   BRANCH_ADDER : entity work.my_gen_n_bit_full_adder(structure)
     generic map(
       G_DATA_WIDTH => WORD_WIDTH
     )
     port map(
-      pi_a => s_ex_aluOut,
+      pi_a => s_ex_pc,
       pi_b => s_ex_immediate,
       pi_carryIn => '0',
       po_sum => s_ex_branchAddr,
       po_carryOut => open
     );
 
-  -- end solution!!
-  ---********************************************************************
-  ---* PC branch selection
-  ---********************************************************************
-  
   s_test <= s_ex_controlword.CMP_RESULT;
   s_ex_pc_sel <= s_ex_controlword.IS_BRANCH and (s_ex_zero xor s_ex_controlword.CMP_RESULT);
 
@@ -358,6 +362,8 @@ begin
           s_mem_pc_sel <= s_ex_pc_sel;
       end if;
   end process;
+
+  s_flush <= (s_mem_pc_sel or s_mem_controlword.PC_SEL) and not pi_rst;
 
   ---********************************************************************
   ---* Pipeline-Register (EX -> MEM) 
@@ -515,7 +521,7 @@ begin
       pi_in0 => s_wb_aluOut,
       pi_in1 => s_wb_immediate,
       pi_in2 => s_wb_pcPlus4,
-      pi_in3 => (others => '0'), -- Placeholder for future use
+      pi_in3 => (others => '0'),
       pi_sel => s_wb_controlword.WB_SEL,
       pOut => s_wb_writeData
     );

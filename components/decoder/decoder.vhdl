@@ -110,7 +110,6 @@ begin
             when bFormat => -- B-Format (Conditional branch)
                 po_controlWord.IS_BRANCH <= '1';
                 v_func3 := pi_instruction(14 downto 12);
-                report to_binary_string(v_func3);
                 case v_func3 is
                     when FUNC3_BEQ =>
                         po_controlWord.CMP_RESULT <= '0';
