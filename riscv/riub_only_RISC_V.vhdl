@@ -372,7 +372,7 @@ begin
     end if;
   end process;
 
-  s_flush <= (s_mem_pc_sel or s_mem_controlword.PC_SEL) and not pi_rst;
+  s_flush <= s_mem_pc_sel or s_mem_controlword.PC_SEL;
 
   ---********************************************************************
   ---* Pipeline-Register (EX -> MEM) 
