@@ -1,10 +1,3 @@
--- Laboratory RA solutions/versuch7
--- Sommersemester 25
--- Group Details
--- Lab Date:
--- 1. Participant First and Last Name: 
--- 2. Participant First and Last Name:
-
 -- ========================================================================
 -- Author:       Marcel Rieß
 -- Last updated: 02.05.2025
@@ -18,30 +11,28 @@ use work.constant_package.all;
 
 package types is
   type controlword is record
-    ALU_OP       : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0); -- determines the ALU's operation
-    I_IMM_SEL    : std_logic;                                       -- used as a MUX selector for i-Format Immediates
-    REG_WRITE    : std_logic;
-    CMP_RESULT   : std_logic;
-    IS_BRANCH    : std_logic;
-    IS_JUMP    : std_logic;
-    A_SEL        : std_logic; -- used as a MUX selector for ALU
-    PC_SEL        : std_logic; -- used as a MUX selector for PC
-    WB_SEL       :std_logic_vector( 1 downto 0);
+    ALU_OP : std_logic_vector(ALU_OPCODE_WIDTH - 1 downto 0); -- determines the ALU's operation
+    I_IMM_SEL : std_logic; -- used as a MUX selector for i-Format Immediates
+    REG_WRITE : std_logic;
+    CMP_RESULT : std_logic;
+    IS_BRANCH : std_logic;
+    A_SEL : std_logic; -- used as a MUX selector for ALU
+    PC_SEL : std_logic; -- used as a MUX selector for PC
+    WB_SEL : std_logic_vector(1 downto 0);
   end record controlWord;
 
   -- allows initialization of control words, used in decoder
   constant control_word_init : controlWord :=
-  (
-  ALU_OP => (others => '0'),
-  I_IMM_SEL  => '0',
-  REG_WRITE   => '0',
-  A_SEL   => '0',
-  IS_BRANCH => '0',
-  CMP_RESULT => '0',
-  PC_SEL   => '0',
-  IS_JUMP => '0',
-  WB_SEL   => "00"
-  );
+                                             (
+                                             ALU_OP => (others => '0'),
+                                             I_IMM_SEL => '0',
+                                             REG_WRITE => '0',
+                                             A_SEL => '0',
+                                             IS_BRANCH => '0',
+                                             CMP_RESULT => '0',
+                                             PC_SEL => '0',
+                                             WB_SEL => "00"
+                                             );
 
   -- enum containig all instruction formats, used in decoder
   type t_instruction_type is (rFormat, iFormat, uFormat, bFormat, sFormat, jFormat, nullFormat);

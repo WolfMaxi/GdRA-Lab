@@ -35,8 +35,11 @@ entity my_alu is
 end entity my_alu;
 
 architecture behavior of my_alu is
+  constant c_zero: std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
+
   signal s_res1, s_res2, s_res3, s_res4, s_res5, s_res6 : std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
   signal s_cIn, s_cOut, s_shift_type, s_shift_direction, s_isSigned : std_logic := '0';
+  signal s_aluOut: std_logic_vector(G_DATA_WIDTH - 1 downto 0) := (others => '0');
 
 begin
   XOR1 : entity work.my_gen_xor(behavior) generic map (G_DATA_WIDTH) port map (pi_OP1, pi_op2, s_res1);
@@ -65,7 +68,7 @@ begin
                   '0' when others;
 
   with pi_aluOP select
-    po_aluOut <=  s_res1 when XOR_ALU_OP,
+    s_aluOut <=   s_res1 when XOR_ALU_OP,
                   s_res2 when OR_ALU_OP,
                   s_res3 when AND_ALU_OP,
                   s_res4 when SLL_ALU_OP,
@@ -79,6 +82,7 @@ begin
                   (others => '0') when others;
 
   po_carryOut <= s_cOut;
-  po_zero <= '1' when po_aluOut = std_logic_vector(to_unsigned(0, DATA_WIDTH_GEN)) else '0';
+  po_aluOut <= s_aluOut;
+  po_zero <= '1' when s_aluOut = c_zero else '0';
   -- end solution!!
 end architecture behavior;

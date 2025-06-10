@@ -1,10 +1,3 @@
--- Laboratory RA solutions/versuch71
--- Sommersemester 25
--- Group Details
--- Lab Date:
--- 1. Participant First and Last Name: 
--- 2. Participant First and Last Name:
-
 -- ========================================================================
 -- Author:       Marcel Rieß
 -- Last updated: 23.05.2025
@@ -271,7 +264,7 @@ begin
     report "==   PASSED   ==";
     -- === Test 6: Branches ===
     if WITH_FLUSH then
-      report "== TEST 5: BRANCHES with FLUSH==";
+      report "== TEST 6: BRANCHES with FLUSH==";
       test <= 6;
       s_rst <= '1';
       wait for PERIOD/2;
@@ -379,13 +372,13 @@ begin
       if (cycle = 29) then
         check_register(8, 2, "ADDI");
       end if;
-      if (cycle = 30) then
+      if (cycle = 33) then
         check_register(9, 10, "OR");
       end if;
-      if (cycle = 31) then
+      if (cycle = 32) then
         check_register(17, 8, "ADD");
       end if;
-      if (cycle = 32) then
+      if (cycle = 33) then
         check_register(1, 11, "SUB");
       end if;
       if (cycle = 36) then

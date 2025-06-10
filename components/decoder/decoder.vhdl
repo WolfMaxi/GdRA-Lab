@@ -80,7 +80,6 @@ begin
                 if v_opcode = JALR_INS_OP then
                     po_controlWord.ALU_OP <= ADD_ALU_OP;
                     po_controlWord.PC_SEL <= '1'; -- Program Counter Selection
-                    --po_controlWord.A_SEL <= '0'; -- A-Selection for ALU
                     po_controlWord.WB_SEL <= "10"; -- JALR Write Back Selection
                 elsif v_opcode = L_INS_OP then
                     po_controlWord.WB_SEL <= "01"; -- Load Write Back Selection
@@ -108,6 +107,30 @@ begin
                 else
                     po_controlWord <= control_word_init; -- Reset control word for unknown uFormat
                 end if;
+            when bFormat => -- B-Format (Conditional branch)
+                po_controlWord.IS_BRANCH <= '1';
+                v_func3 := pi_instruction(14 downto 12);
+                case v_func3 is
+                    when FUNC3_BEQ =>
+                        po_controlWord.CMP_RESULT <= '0';
+                        po_controlWord.ALU_OP <= SUB_ALU_OP;
+                    when FUNC3_BNE =>
+                        po_controlWord.CMP_RESULT <= '1';
+                        po_controlWord.ALU_OP <= SUB_ALU_OP;
+                    when FUNC3_BLT =>
+                        po_controlWord.CMP_RESULT <= '1';
+                        po_controlWord.ALU_OP <= SLT_ALU_OP;
+                    when FUNC3_BGE =>
+                        po_controlWord.CMP_RESULT <= '0';
+                        po_controlWord.ALU_OP <= SLT_ALU_OP;
+                    when FUNC3_BLTU =>
+                        po_controlWord.CMP_RESULT <= '1';
+                        po_controlWord.ALU_OP <= SLTU_ALU_OP;
+                    when FUNC3_BGEU =>
+                        po_controlWord.CMP_RESULT <= '0';
+                        po_controlWord.ALU_OP <= SLTU_ALU_OP;
+                    when others => null;
+                end case;
             when others =>
                 po_controlWord <= control_word_init;
         end case;
