@@ -70,7 +70,21 @@ begin
             when iFormat => -- I-Format (Immediate)
         	    v_func7 := pi_instruction(31 downto 25);
                 v_func3 := pi_instruction(14 downto 12);
-                v_aluOp := v_func7(5) & v_func3;
+                case v_func3 is
+                    when "000" => v_aluOp := ADD_ALU_OP; -- ADDI
+                    when "010" => v_aluOp := SLT_ALU_OP; -- SLTI
+                    when "100" => v_aluOp := XOR_ALU_OP; -- XORI
+                    when "110" => v_aluOp := OR_ALU_OP;  -- ORI
+                    when "111" => v_aluOp := AND_ALU_OP; -- ANDI
+                    when "001" => v_aluOp := SLL_ALU_OP; -- SLLI
+                    when "101" =>
+                        if v_func7(5) then
+                            v_aluOp := SRA_ALU_OP; -- SRAI
+                        else
+                            v_aluOp := SRL_ALU_OP; -- SRLI
+                        end if;
+                    when others => v_aluOp := (others => '0');
+                end case;
                 po_controlWord.ALU_OP <= v_aluOp;
                 po_controlWord.I_IMM_SEL <= '1';
                 po_controlWord.A_SEL <= '0';
