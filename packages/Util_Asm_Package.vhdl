@@ -1,390 +1,373 @@
--- Laboratory RA solutions/versuch3
+-- Laboratory RA solutions/versuch8
 -- Sommersemester 25
 -- Group Details
--- Lab Date: 27.05.2025
--- 1. Participant First and Last Name: Maximilan Wolf
--- 2. Participant First and Last Name: Esad-Muhammed Cekmeci
+-- Lab Date:
+-- 1. Participant First and Last Name: 
+-- 2. Participant First and Last Name:
 
 -- ========================================================================
 -- Author:       Marcel Riess
--- Last updated: 05.05.2025
+-- Last updated: 05.08.2024
 -- Description:  Some asm-functions that help with writing shorter and more
 --               readable code. They are only used in testbenches!
 -- ========================================================================
 
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
-USE ieee.numeric_std.ALL;
-USE ieee.math_real.ALL;
-USE work.constant_package.ALL;
-USE work.types.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.math_real.all;
+use work.constant_package.all;
+use work.types.all;
 
-PACKAGE util_asm_package IS
+package util_asm_package is
 
   -- Function interface declaration. For implemenation, see package body below
 
-  FUNCTION Asm2Std(instr : STRING;token1 : INTEGER;token2 : INTEGER;token3 : INTEGER) RETURN STD_LOGIC_VECTOR;
+  function Asm2Std(instr : string;token1 : integer;token2 : integer;token3 : integer) return std_logic_vector;
 
-END PACKAGE util_asm_package;
+end package util_asm_package;
 
-PACKAGE BODY util_asm_package IS
+package body util_asm_package is
 
   -- construct an R-format instruction using the alu opcode (NOT the instruction opcode: see Constant_Package.vhdl)
 
-  FUNCTION Asm2Std(instr : STRING; token1 : INTEGER; token2 : INTEGER; token3 : INTEGER) RETURN STD_LOGIC_VECTOR IS
-    VARIABLE opcode : STD_LOGIC_VECTOR(6 DOWNTO 0);
-    VARIABLE funct3 : STD_LOGIC_VECTOR(2 DOWNTO 0);
-    VARIABLE funct7 : STD_LOGIC_VECTOR(6 DOWNTO 0);
-    VARIABLE rd : STD_LOGIC_VECTOR(4 DOWNTO 0);
-    VARIABLE rs1 : STD_LOGIC_VECTOR(4 DOWNTO 0);
-    VARIABLE rs2 : STD_LOGIC_VECTOR(4 DOWNTO 0);
-    VARIABLE imm : STD_LOGIC_VECTOR(11 DOWNTO 0);
-    VARIABLE immJump : STD_LOGIC_VECTOR(19 DOWNTO 0);
-    VARIABLE shamt : STD_LOGIC_VECTOR(4 DOWNTO 0);
-    VARIABLE machine_word : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
-  BEGIN
+  function Asm2Std(instr : string; token1 : integer; token2 : integer; token3 : integer) return std_logic_vector is
+    variable opcode : std_logic_vector(6 downto 0);
+    variable funct3 : std_logic_vector(2 downto 0);
+    variable funct7 : std_logic_vector(6 downto 0);
+    variable rd : std_logic_vector(4 downto 0);
+    variable rs1 : std_logic_vector(4 downto 0);
+    variable rs2 : std_logic_vector(4 downto 0);
+    variable imm : std_logic_vector(11 downto 0);
+    variable immJump : std_logic_vector(19 downto 0);
+    variable shamt : std_logic_vector(4 downto 0);
+    variable machine_word : std_logic_vector(31 downto 0) := (others => '0');
+  begin
     --I-Format
-    IF instr = "ADDI" THEN
+    if instr = "ADDI" then
       opcode := I_INS_OP; -- I-type
       funct3 := "000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
       -- Immediate-Wert als 12-bit 2's Komplement
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
+      imm := std_logic_vector(to_signed(((token3)), 12));
       machine_word := imm & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "SLTI" THEN
+    elsif instr = "SLTI" then
       opcode := I_INS_OP; -- I-type
       funct3 := "010";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
       -- Immediate-Wert als 12-bit 2's Komplement
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
+      imm := std_logic_vector(to_signed(((token3)), 12));
       machine_word := imm & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "SLTIU" THEN
+    elsif instr = "SLTIU" then
       opcode := I_INS_OP; -- I-type
       funct3 := "011";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
       -- Immediate-Wert als 12-bit 2's Komplement
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
+      imm := std_logic_vector(to_signed(((token3)), 12));
       machine_word := imm & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "XORI" THEN
+    elsif instr = "XORI" then
       opcode := I_INS_OP; -- I-type
       funct3 := "100";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
       -- Immediate-Wert als 12-bit 2's Komplement
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
+      imm := std_logic_vector(to_signed(((token3)), 12));
       machine_word := imm & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "ORI" THEN
+    elsif instr = "ORI" then
       opcode := I_INS_OP; -- I-type
       funct3 := "110";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
       -- Immediate-Wert als 12-bit 2's Komplement
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
+      imm := std_logic_vector(to_signed(((token3)), 12));
       machine_word := imm & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "ANDI" THEN
+    elsif instr = "ANDI" then
       opcode := I_INS_OP; -- I-type
       funct3 := "111";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
       -- Immediate-Wert als 12-bit 2's Komplement
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
+      imm := std_logic_vector(to_signed(((token3)), 12));
       machine_word := imm & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "SLLI" THEN
+    elsif instr = "SLLI" then
       opcode := I_INS_OP; -- I-type
       funct3 := "001";
       funct7 := "0000000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
       -- Shift-Ammount als 5-bit 2's Komplement Immediate
-      shamt := STD_LOGIC_VECTOR(to_signed((token3), 5));
+      shamt := std_logic_vector(to_signed((token3), 5));
       machine_word := funct7 & shamt & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "SRLI" THEN
+    elsif instr = "SRLI" then
       opcode := I_INS_OP; -- I-type
       funct3 := "101";
       funct7 := "0000000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
       -- Shift-Ammount als 5-bit 2's Komplement Immediate
-      shamt := STD_LOGIC_VECTOR(to_signed(((token3)), 5));
+      shamt := std_logic_vector(to_signed(((token3)), 5));
       machine_word := funct7 & shamt & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "SRAI" THEN
+    elsif instr = "SRAI" then
       opcode := I_INS_OP; -- I-type
       funct3 := "101";
       funct7 := "0100000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
       -- Shift-Ammount als 5-bit 2's Komplement Immediate
-      shamt := STD_LOGIC_VECTOR(to_signed(((token3)), 5));
+      shamt := std_logic_vector(to_signed(((token3)), 5));
       machine_word := funct7 & shamt & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "LB" THEN
+    elsif instr = "LB" then
       opcode := L_INS_OP; -- I-type
       funct3 := "000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5)); --üblicherweise 0? im normalen Assembler schreibt man eigentlich nur lb rd i
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5)); --üblicherweise 0? im normalen Assembler schreibt man eigentlich nur lb rd i
       -- Immediate-Wert als 12-bit 2's Komplement
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
+      imm := std_logic_vector(to_signed(((token3)), 12));
       machine_word := imm & rs1 & funct3 & rd & opcode;
       --report to_bstring (machine_word);
-    ELSIF instr = "LH" THEN
+    elsif instr = "LH" then
       opcode := L_INS_OP; -- I-type
       funct3 := "001";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));--rs2 sollte immer 0 sein, ist nur Platzhalter
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));--rs2 sollte immer 0 sein, ist nur Platzhalter
       -- Immediate-Wert als 12-bit 2's Komplement
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
+      imm := std_logic_vector(to_signed(((token3)), 12));
       machine_word := imm & rs1 & funct3 & rd & opcode;
       --report to_bstring (machine_word);
 
-    ELSIF instr = "LW" THEN
+    elsif instr = "LW" then
       opcode := L_INS_OP; -- I-type
       funct3 := "010";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));--rs2 sollte immer 0 sein, ist nur Platzhalter
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));--rs2 sollte immer 0 sein, ist nur Platzhalter
       -- Immediate-Wert als 12-bit 2's Komplement
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
+      imm := std_logic_vector(to_signed(((token3)), 12));
       machine_word := imm & rs1 & funct3 & rd & opcode;
       --report to_bstring (machine_word);
-    ELSIF instr = "LBU" THEN
+    elsif instr = "LBU" then
       opcode := L_INS_OP; -- I-type
       funct3 := "100";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));--rs2 sollte immer 0 sein, ist nur Platzhalter
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));--rs2 sollte immer 0 sein, ist nur Platzhalter
       -- Immediate-Wert als 12-bit 2's Komplement
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
+      imm := std_logic_vector(to_signed(((token3)), 12));
       machine_word := imm & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "LHU" THEN
+    elsif instr = "LHU" then
       opcode := L_INS_OP; -- I-type
       funct3 := "101";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));--rs2 sollte immer 0 sein, ist nur Platzhalter
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));--rs2 sollte immer 0 sein, ist nur Platzhalter
       -- Immediate-Wert als 12-bit 2's Komplement
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
+      imm := std_logic_vector(to_signed(((token3)), 12));
       machine_word := imm & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "JALR" THEN
+    elsif instr = "JALR" then
       opcode := JALR_INS_OP; -- I-type
       funct3 := "000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
       -- Immediate-Wert als 12-bit 2's Komplement
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
+      imm := std_logic_vector(to_signed(((token3)), 12));
       machine_word := imm & rs1 & funct3 & rd & opcode;
 
       --J-Format
-    ELSIF instr = "JAL" THEN
+    elsif instr = "JAL" then
       opcode := JAL_INS_OP; -- J-type
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
       -- Immediate-Wert als 20-bit 2's Komplement
-      immJump := STD_LOGIC_VECTOR(to_signed(((token2)), 20));
-      
+      immJump := std_logic_vector(to_signed(((token2)), 20));
+
       -- Teile zusammensetzen gemäß J-Typ
-      machine_word(31)      := immJump(19);                  -- imm[20]
-      machine_word(30 downto 21) := immJump(9 downto 0);     -- imm[10:1]
-      machine_word(20)      := immJump(10);                  -- imm[11]
-      machine_word(19 downto 12) := immJump(18 downto 11);   -- imm[19:12]
-      machine_word(11 downto 7) := rd;                       -- rd
-      machine_word(6 downto 0) := opcode;                    -- opcode
+      machine_word(31) := immJump(19); -- imm[20]
+      machine_word(30 downto 21) := immJump(9 downto 0); -- imm[10:1]
+      machine_word(20) := immJump(10); -- imm[11]
+      machine_word(19 downto 12) := immJump(18 downto 11); -- imm[19:12]
+      machine_word(11 downto 7) := rd; -- rd
+      machine_word(6 downto 0) := opcode; -- opcode
 
       --U-Format
-    ELSIF instr = "LUI" THEN
+    elsif instr = "LUI" then
       opcode := LUI_INS_OP; -- U-type
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
       -- Immediate-Wert als 20-bit 2's Komplement
-      immJump := STD_LOGIC_VECTOR(to_signed(((token2)), 20));
+      immJump := std_logic_vector(to_signed(((token2)), 20));
       machine_word := immJump & rd & opcode;
 
-    ELSIF instr = "AUIPC" THEN
+    elsif instr = "AUIPC" then
       opcode := AUIPC_INS_OP; -- U-type
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
       -- Immediate-Wert als 20-bit 2's Komplement
-      immJump := STD_LOGIC_VECTOR(to_signed(((token2)), 20));
+      immJump := std_logic_vector(to_signed(((token2)), 20));
       machine_word := immJump & rd & opcode;
 
       -- B Befehle
 
-    ELSIF instr = "BEQ" THEN
+    elsif instr = "BEQ" then
       opcode := B_INS_OP; -- B-type
       funct3 := "000";
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
-      machine_word := imm(11) & imm(9 DOWNTO 4) & rs2 & rs1 & funct3 & imm(3 DOWNTO 0) & imm(10) & opcode;
+      rs1 := std_logic_vector(to_unsigned(token1, 5));
+      rs2 := std_logic_vector(to_unsigned(token2, 5));
+      imm := std_logic_vector(to_signed(((token3)), 12));
+      machine_word := imm(11) & imm(9 downto 4) & rs2 & rs1 & funct3 & imm(3 downto 0) & imm(10) & opcode;
 
-    ELSIF instr = "BNE" THEN
+    elsif instr = "BNE" then
       opcode := B_INS_OP; -- B-type
       funct3 := "001";
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
-      machine_word := imm(11) & imm(9 DOWNTO 4) & rs2 & rs1 & funct3 & imm(3 DOWNTO 0) & imm(10) & opcode;
+      rs1 := std_logic_vector(to_unsigned(token1, 5));
+      rs2 := std_logic_vector(to_unsigned(token2, 5));
+      imm := std_logic_vector(to_signed(((token3)), 12));
+      machine_word := imm(11) & imm(9 downto 4) & rs2 & rs1 & funct3 & imm(3 downto 0) & imm(10) & opcode;
 
-    ELSIF instr = "BLT" THEN
+    elsif instr = "BLT" then
       opcode := B_INS_OP; -- B-type
       funct3 := "100";
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
-      machine_word := imm(11) & imm(9 DOWNTO 4) & rs2 & rs1 & funct3 & imm(3 DOWNTO 0) & imm(10) & opcode;
+      rs1 := std_logic_vector(to_unsigned(token1, 5));
+      rs2 := std_logic_vector(to_unsigned(token2, 5));
+      imm := std_logic_vector(to_signed(((token3)), 12));
+      machine_word := imm(11) & imm(9 downto 4) & rs2 & rs1 & funct3 & imm(3 downto 0) & imm(10) & opcode;
 
-    ELSIF instr = "BGE" THEN
+    elsif instr = "BGE" then
       opcode := B_INS_OP; -- B-type
       funct3 := "101";
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
-      machine_word := imm(11) & imm(9 DOWNTO 4) & rs2 & rs1 & funct3 & imm(3 DOWNTO 0) & imm(10) & opcode;
+      rs1 := std_logic_vector(to_unsigned(token1, 5));
+      rs2 := std_logic_vector(to_unsigned(token2, 5));
+      imm := std_logic_vector(to_signed(((token3)), 12));
+      machine_word := imm(11) & imm(9 downto 4) & rs2 & rs1 & funct3 & imm(3 downto 0) & imm(10) & opcode;
 
-    ELSIF instr = "BLTU" THEN
+    elsif instr = "BLTU" then
       opcode := B_INS_OP; -- B-type
       funct3 := "110";
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
-      machine_word := imm(11) & imm(9 DOWNTO 4) & rs2 & rs1 & funct3 & imm(3 DOWNTO 0) & imm(10) & opcode;
+      rs1 := std_logic_vector(to_unsigned(token1, 5));
+      rs2 := std_logic_vector(to_unsigned(token2, 5));
+      imm := std_logic_vector(to_signed(((token3)), 12));
+      machine_word := imm(11) & imm(9 downto 4) & rs2 & rs1 & funct3 & imm(3 downto 0) & imm(10) & opcode;
 
-    ELSIF instr = "BGEU" THEN
+    elsif instr = "BGEU" then
       opcode := B_INS_OP; -- B-type
       funct3 := "111";
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
-      machine_word := imm(11) & imm(9 DOWNTO 4) & rs2 & rs1 & funct3 & imm(3 DOWNTO 0) & imm(10) & opcode;
+      rs1 := std_logic_vector(to_unsigned(token1, 5));
+      rs2 := std_logic_vector(to_unsigned(token2, 5));
+      imm := std_logic_vector(to_signed(((token3)), 12));
+      machine_word := imm(11) & imm(9 downto 4) & rs2 & rs1 & funct3 & imm(3 downto 0) & imm(10) & opcode;
 
       -- S Befehle
-    ELSIF instr = "SB" THEN
+    elsif instr = "SB" then
       opcode := S_INS_OP; -- S-type
       funct3 := "000";
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token2, 5)); --rs2 sollte immer 0 sein, ist nur Platzhalter
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
-      machine_word := imm(11 DOWNTO 5) & rs2 & rs1 & funct3 & imm(4 DOWNTO 0) & opcode;
+      rs1 := std_logic_vector(to_unsigned(token1, 5));
+      rs2 := std_logic_vector(to_unsigned(token2, 5)); --rs2 sollte immer 0 sein, ist nur Platzhalter
+      imm := std_logic_vector(to_signed(((token3)), 12));
+      machine_word := imm(11 downto 5) & rs2 & rs1 & funct3 & imm(4 downto 0) & opcode;
       --report to_bstring (machine_word);
-    ELSIF instr = "SH" THEN
+    elsif instr = "SH" then
       opcode := S_INS_OP; -- S-type
       funct3 := "001";
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token2, 5)); --rs2 sollte immer 0 sein, ist nur Platzhalter
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
-      machine_word := imm(11 DOWNTO 5) & rs2 & rs1 & funct3 & imm(4 DOWNTO 0) & opcode;
+      rs1 := std_logic_vector(to_unsigned(token1, 5));
+      rs2 := std_logic_vector(to_unsigned(token2, 5)); --rs2 sollte immer 0 sein, ist nur Platzhalter
+      imm := std_logic_vector(to_signed(((token3)), 12));
+      machine_word := imm(11 downto 5) & rs2 & rs1 & funct3 & imm(4 downto 0) & opcode;
       --report to_bstring (machine_word);
-    ELSIF instr = "SW" THEN
+    elsif instr = "SW" then
       opcode := S_INS_OP; -- S-type
       funct3 := "010";
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token2, 5)); --rs2 sollte immer 0 sein, ist nur Platzhalter
-      imm := STD_LOGIC_VECTOR(to_signed(((token3)), 12));
-      machine_word := imm(11 DOWNTO 5) & rs2 & rs1 & funct3 & imm(4 DOWNTO 0) & opcode;
+      rs1 := std_logic_vector(to_unsigned(token1, 5));
+      rs2 := std_logic_vector(to_unsigned(token2, 5)); --rs2 sollte immer 0 sein, ist nur Platzhalter
+      imm := std_logic_vector(to_signed(((token3)), 12));
+      machine_word := imm(11 downto 5) & rs2 & rs1 & funct3 & imm(4 downto 0) & opcode;
       --report to_bstring (machine_word);
       --R-Format
-    ELSIF instr = "ADD" THEN
+    elsif instr = "ADD" then
       opcode := R_INS_OP; -- R-type
       funct3 := "000";
       funct7 := "0000000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token3, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
+      rs2 := std_logic_vector(to_unsigned(token3, 5));
       machine_word := funct7 & rs2 & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "SUB" THEN
+    elsif instr = "SUB" then
       opcode := R_INS_OP; -- R-type
       funct3 := "000";
       funct7 := "0100000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token3, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
+      rs2 := std_logic_vector(to_unsigned(token3, 5));
       machine_word := funct7 & rs2 & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "AND" THEN
+    elsif instr = "AND" then
       opcode := R_INS_OP; -- R-type
       funct3 := "111";
       funct7 := "0000000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token3, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
+      rs2 := std_logic_vector(to_unsigned(token3, 5));
       machine_word := funct7 & rs2 & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "OR" THEN
+    elsif instr = "OR" then
       opcode := R_INS_OP; -- R-type
       funct3 := "110";
       funct7 := "0000000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token3, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
+      rs2 := std_logic_vector(to_unsigned(token3, 5));
       machine_word := funct7 & rs2 & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "XOR" THEN
+    elsif instr = "XOR" then
       opcode := R_INS_OP; -- R-type
       funct3 := "100";
       funct7 := "0000000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token3, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
+      rs2 := std_logic_vector(to_unsigned(token3, 5));
       machine_word := funct7 & rs2 & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "SLL" THEN
+    elsif instr = "SLL" then
       opcode := R_INS_OP; -- R-type
       funct3 := "001";
       funct7 := "0000000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token3, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
+      rs2 := std_logic_vector(to_unsigned(token3, 5));
       machine_word := funct7 & rs2 & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "SRL" THEN
+    elsif instr = "SRL" then
       opcode := R_INS_OP; -- R-type
       funct3 := "101";
       funct7 := "0000000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token3, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
+      rs2 := std_logic_vector(to_unsigned(token3, 5));
       machine_word := funct7 & rs2 & rs1 & funct3 & rd & opcode;
 
-    ELSIF instr = "SRA" THEN
+    elsif instr = "SRA" then
       opcode := R_INS_OP; -- R-type
       funct3 := "101";
       funct7 := "0100000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token3, 5));
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
+      rs2 := std_logic_vector(to_unsigned(token3, 5));
       machine_word := funct7 & rs2 & rs1 & funct3 & rd & opcode;
-       -- begin solution:
-    ELSIF instr = "SLT" THEN
-      opcode := R_INS_OP; -- R-type
-      funct3 := "010";
-      funct7 := "0000000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token3, 5));
-      machine_word := funct7 & rs2 & rs1 & funct3 & rd & opcode;
-
-    ELSIF instr = "SLTU" THEN
-      opcode := R_INS_OP; -- R-type
-      funct3 := "011";
-      funct7 := "0000000";
-      rd := STD_LOGIC_VECTOR(to_unsigned(token1, 5));
-      rs1 := STD_LOGIC_VECTOR(to_unsigned(token2, 5));
-      rs2 := STD_LOGIC_VECTOR(to_unsigned(token3, 5));
-      machine_word := funct7 & rs2 & rs1 & funct3 & rd & opcode;
-       -- end solution!!
-    ELSE
+      -- begin solution:
+      -- end solution!!
+    else
       -- Unsupported instruction
-      machine_word := (OTHERS => 'X');
-    END IF;
+      machine_word := (others => 'X');
+    end if;
 
-    RETURN machine_word;
-  END FUNCTION;
+    return machine_word;
+  end function;
 
-END PACKAGE BODY util_asm_package;
+end package body util_asm_package;
