@@ -63,7 +63,6 @@ begin
   -- Signed / Unsigned for comparator
   with pi_aluOP select
     s_isSigned <= '0' when SLTU_ALU_OP,
-    		  '0' when SLTIU_ALU_OP,
                   '1' when SLT_ALU_OP,
                   '0' when others;
 
@@ -78,7 +77,6 @@ begin
                   s_res5 when SUB_ALU_OP,
                   s_res6 when SLT_ALU_OP,
                   s_res6 when SLTU_ALU_OP,
-        	        s_res6 when SLTIU_ALU_OP,
                   (others => '0') when others;
 
   po_carryOut <= s_cOut;
