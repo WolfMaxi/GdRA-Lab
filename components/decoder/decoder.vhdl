@@ -63,18 +63,19 @@ begin
                 v_func7 := pi_instruction(31 downto 25);
                 v_func3 := pi_instruction(14 downto 12);
                 v_aluOp := v_func7(5) & v_func3;
+
                 po_controlWord.ALU_OP <= v_aluOp;
                 po_controlWord.I_IMM_SEL <= '0';
                 po_controlWord.REG_WRITE <= '1';
-                po_controlWord.WB_SEL <= "00"; -- Register WB sel (ALU)
+                po_controlWord.WB_SEL <= "00";
             when iFormat => -- I-Format (Immediate)
-        	    v_func7 := pi_instruction(31 downto 25);
+                v_func7 := pi_instruction(31 downto 25);
                 v_func3 := pi_instruction(14 downto 12);
                 case v_func3 is
                     when "000" => v_aluOp := ADD_ALU_OP; -- ADDI
                     when "010" => v_aluOp := SLT_ALU_OP; -- SLTI
                     when "100" => v_aluOp := XOR_ALU_OP; -- XORI
-                    when "110" => v_aluOp := OR_ALU_OP;  -- ORI
+                    when "110" => v_aluOp := OR_ALU_OP; -- ORI
                     when "111" => v_aluOp := AND_ALU_OP; -- ANDI
                     when "001" => v_aluOp := SLL_ALU_OP; -- SLLI
                     when "101" =>
@@ -144,6 +145,24 @@ begin
                         po_controlWord.CMP_RESULT <= '0';
                         po_controlWord.ALU_OP <= SLTU_ALU_OP;
                     when others => null;
+                end case;
+            when sFormat =>
+                case v_opcode is
+                    when S_INS_OP =>
+                        po_controlWord.ALU_OP <= ADD_ALU_OP;
+                        po_controlWord.I_IMM_SEL <= '1';
+                        po_controlWord.MEM_WRITE <= '1';
+
+                        po_controlWord.MEM_CTR <= v_func3;
+                    when L_INS_OP =>
+                        po_controlWord.ALU_OP <= ADD_ALU_OP;
+                        po_controlWord.I_IMM_SEL <= '1';
+                        po_controlWord.MEM_READ <= '1';
+                        po_controlWord.WB_SEL <= "11";
+                        po_controlWord.REG_WRITE <= '1';
+                        po_controlWord.MEM_CTR <= v_func3;
+                    when others =>
+                        po_controlWord <= CONTROL_WORD_INIT;
                 end case;
             when others =>
                 po_controlWord <= control_word_init;

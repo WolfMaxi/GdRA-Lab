@@ -52,8 +52,6 @@ begin
     s_storeImm <= std_logic_vector(resize(signed(pi_instr(31 downto 25) & pi_instr(11 downto 7)), word_width));
     s_branchImm <= std_logic_vector(resize(signed(pi_instr(31) & pi_instr(7) & pi_instr(30 downto 25) & pi_instr(11 downto 8) & '0'), word_width));
     s_jumpImm <= std_logic_vector(resize(signed(pi_instr(31) & pi_instr(19 downto 12) & pi_instr(20) & pi_instr(30 downto 21) & '0'), word_width));
-    s_unsignedImm <= pi_instr(word_width - 1 downto 12) & (11 downto 0 => '0');
-    s_jumpImm <= std_logic_vector(resize(signed(pi_instr(31) & pi_instr(19 downto 12) & pi_instr(20) & pi_instr(30 downto 21) & '0'), word_width));
     s_unsignedImm <= pi_instr(31 downto 12) & std_logic_vector(to_unsigned(0, 12)); -- Explicitly 12 zeros
 
     -- Opcode for selecting immediate
@@ -62,14 +60,14 @@ begin
     -- Signal assignment for selected immediate
 
     with s_opcode select
-      po_selectedImm <=
-        s_immediateImm   when I_INS_OP | L_INS_OP | JALR_INS_OP,
-        s_storeImm       when S_INS_OP,
-        s_branchImm      when B_INS_OP,
-        s_unsignedImm    when LUI_INS_OP |AUIPC_INS_OP,
-        s_jumpImm        when JAL_INS_OP,
-        (others => '0')  when others;
-    
+        po_selectedImm <=
+        s_immediateImm when I_INS_OP | L_INS_OP | JALR_INS_OP,
+        s_storeImm when S_INS_OP,
+        s_branchImm when B_INS_OP,
+        s_unsignedImm when LUI_INS_OP | AUIPC_INS_OP,
+        s_jumpImm when JAL_INS_OP,
+        (others => '0') when others;
+
     -- Set immediates for eatch type
     po_immediateImm <= s_immediateImm;
     po_storeImm <= s_storeImm;
