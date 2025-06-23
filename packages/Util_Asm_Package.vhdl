@@ -289,6 +289,24 @@ package body util_asm_package is
       machine_word := imm(11 downto 5) & rs2 & rs1 & funct3 & imm(4 downto 0) & opcode;
       --report to_bstring (machine_word);
       --R-Format
+    elsif instr = "SLT" then
+      opcode := R_INS_OP;
+      funct3 := "010";
+      funct7 := "0000000";
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
+      rs2 := std_logic_vector(to_unsigned(token3, 5));
+      machine_word := funct7 & rs2 & rs1 & funct3 & rd & opcode;
+
+    elsif instr = "SLTU" then
+      opcode := R_INS_OP;
+      funct3 := "011";
+      funct7 := "0000000";
+      rd := std_logic_vector(to_unsigned(token1, 5));
+      rs1 := std_logic_vector(to_unsigned(token2, 5));
+      rs2 := std_logic_vector(to_unsigned(token3, 5));
+      machine_word := funct7 & rs2 & rs1 & funct3 & rd & opcode;
+
     elsif instr = "ADD" then
       opcode := R_INS_OP; -- R-type
       funct3 := "000";
