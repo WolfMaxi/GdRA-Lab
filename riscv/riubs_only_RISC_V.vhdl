@@ -454,7 +454,7 @@ begin
   ---* memory phase
   ---********************************************************************
   -- begin solution:
-DATA_MEMORY: entity work.data_memory(behavior)
+  DATA_MEMORY: entity work.data_memory(behavior)
     generic map (
       adr_width => ADR_WIDTH
     )
