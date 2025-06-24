@@ -63,27 +63,69 @@ begin
                 v_func7 := pi_instruction(31 downto 25);
                 v_func3 := pi_instruction(14 downto 12);
                 v_aluOp := v_func7(5) & v_func3;
+
                 po_controlWord.ALU_OP <= v_aluOp;
                 po_controlWord.I_IMM_SEL <= '0';
                 po_controlWord.REG_WRITE <= '1';
-                po_controlWord.WB_SEL <= "00"; -- Register WB sel (ALU)
+                po_controlWord.WB_SEL <= "00";
             when iFormat => -- I-Format (Immediate)
-        	    v_func7 := pi_instruction(31 downto 25);
+                v_func7 := pi_instruction(31 downto 25);
                 v_func3 := pi_instruction(14 downto 12);
-                v_aluOp := v_func7(5) & v_func3;
-                po_controlWord.ALU_OP <= v_aluOp;
-                po_controlWord.I_IMM_SEL <= '1';
-                po_controlWord.A_SEL <= '0';
-                po_controlWord.PC_SEL <= '0'; -- Program Counter Selection
-                po_controlWord.REG_WRITE <= '1';
-                po_controlWord.WB_SEL <= "00"; -- Register WB sel (ALU)
-                if v_opcode = JALR_INS_OP then
+
+                if v_opcode = L_INS_OP then -- LOAD-Instruktionen
+                    po_controlWord.ALU_OP <= (others => '0');
+                    po_controlWord.I_IMM_SEL <= '1';
+                    po_controlWord.WB_SEL <= "11";
+                    po_controlWord.REG_WRITE <= '1';
+                    po_controlWord.A_SEL <= '0';
+                    po_controlWord.PC_SEL <= '0';
+                    po_controlWord.IS_BRANCH <= '0';
+                    po_controlWord.CMP_RESULT <= '0';
+                    po_controlWord.MEM_READ <= '1';
+                    po_controlWord.MEM_WRITE <= '0';
+
+                    case v_func3 is
+                        when LB_OP => po_controlWord.MEM_CTR <= "000";
+                        when LH_OP => po_controlWord.MEM_CTR <= "001";
+                        when LW_OP => po_controlWord.MEM_CTR <= "010";
+                        when LBU_OP => po_controlWord.MEM_CTR <= "100";
+                        when LHU_OP => po_controlWord.MEM_CTR <= "101";
+                        when others => po_controlWord.MEM_CTR <= "000"; -- default
+                    end case;
+
+                elsif v_opcode = JALR_INS_OP then -- JALR Instruktion
                     po_controlWord.ALU_OP <= ADD_ALU_OP;
-                    po_controlWord.PC_SEL <= '1'; -- Program Counter Selection
-                    po_controlWord.WB_SEL <= "10"; -- JALR Write Back Selection
-                elsif v_opcode = L_INS_OP then
-                    po_controlWord.WB_SEL <= "01"; -- Load Write Back Selection
+                    po_controlWord.I_IMM_SEL <= '1';
+                    po_controlWord.A_SEL <= '0';
+                    po_controlWord.PC_SEL <= '1';
+                    po_controlWord.REG_WRITE <= '1';
+                    po_controlWord.WB_SEL <= "10";
+
+                else -- Arithmetische I-Typ Instruktionen wie ADDI, SLTI, ORI, etc.
+                    case v_func3 is
+                        when "000" => v_aluOp := ADD_ALU_OP; -- ADDI
+                        when "010" => v_aluOp := SLT_ALU_OP; -- SLTI
+                        when "100" => v_aluOp := XOR_ALU_OP; -- XORI
+                        when "110" => v_aluOp := OR_ALU_OP; -- ORI
+                        when "111" => v_aluOp := AND_ALU_OP; -- ANDI
+                        when "001" => v_aluOp := SLL_ALU_OP; -- SLLI
+                        when "101" =>
+                            if v_func7(5) = '1' then
+                                v_aluOp := SRA_ALU_OP; -- SRAI
+                            else
+                                v_aluOp := SRL_ALU_OP; -- SRLI
+                            end if;
+                        when others => v_aluOp := (others => '0');
+                    end case;
+
+                    po_controlWord.ALU_OP <= v_aluOp;
+                    po_controlWord.I_IMM_SEL <= '1';
+                    po_controlWord.A_SEL <= '0';
+                    po_controlWord.PC_SEL <= '0';
+                    po_controlWord.REG_WRITE <= '1';
+                    po_controlWord.WB_SEL <= "00"; -- ALU-Ergebnis
                 end if;
+
             when uFormat => -- U-Format (Upper Immediate)
                 if v_opcode = LUI_INS_OP then
                     po_controlWord.ALU_OP <= ADD_ALU_OP;
@@ -130,6 +172,26 @@ begin
                         po_controlWord.CMP_RESULT <= '0';
                         po_controlWord.ALU_OP <= SLTU_ALU_OP;
                     when others => null;
+                end case;
+            when sFormat =>
+                v_func3 := pi_instruction(14 downto 12);
+                case v_func3 is
+                    when SB_OP =>
+                        po_controlWord.ALU_OP <= (others => '0');
+                        po_controlWord.I_IMM_SEL <= '1';
+                        po_controlWord.MEM_WRITE <= '1';
+                    when SH_OP =>
+                        po_controlWord.ALU_OP <= (others => '0');
+                        po_controlWord.I_IMM_SEL <= '1';
+                        po_controlWord.MEM_CTR <= "001";
+                        po_controlWord.MEM_WRITE <= '1';
+                    when SW_OP =>
+                        po_controlWord.ALU_OP <= (others => '0');
+                        po_controlWord.I_IMM_SEL <= '1';
+                        po_controlWord.MEM_CTR <= "010";
+                        po_controlWord.MEM_WRITE <= '1';
+                    when others =>
+                        po_controlWord <= CONTROL_WORD_INIT;
                 end case;
             when others =>
                 po_controlWord <= control_word_init;
