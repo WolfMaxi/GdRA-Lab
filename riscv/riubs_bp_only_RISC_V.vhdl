@@ -56,7 +56,7 @@ architecture structure of riubs_bp_only_RISC_V is
   signal s_id_immediate, s_ex_immediate, s_mem_immediate, s_wb_immediate : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Execute =============
   signal s_of_aluOP1, s_of_aluOP2, s_ex_aluOP1, s_ex_aluOP2 : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
-  signal s_ex_aluOP1_sel, s_ex_aluOP2_sel : std_logic_vector(WORD_WIDTH - 1 downto 0);
+  signal s_ex_aluOP1_sel, s_ex_aluOP2_sel : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   signal s_ex_aluOut, s_mem_aluOut, s_wb_aluOut : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Branch =============
   signal s_ex_pc_sel, s_mem_pc_sel, s_ex_zero : std_logic := '0';
@@ -64,7 +64,7 @@ architecture structure of riubs_bp_only_RISC_V is
   signal s_ex_branchAddr, s_mem_branchAddr : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   signal s_flush : std_logic := '0';
   -- ============ Memory =============
-  signal s_mem_aluOP2, s_wb_memory_out : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_mem_aluOP2, s_memory_out : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Write Back ==========
   signal s_wb_writeData : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Forwarding ==========
@@ -300,7 +300,7 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_data => s_id_bp_rs1_sel,
       po_data => s_ex_bp_rs1_sel
     );
@@ -311,44 +311,18 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_data => s_id_bp_rs2_sel,
       po_data => s_ex_bp_rs2_sel
     );
 
-  s_bp_rs1_mem <= s_wb_memory_out when (s_id_rs1Addr = s_mem_dAddr) and (
+  s_bp_rs1_mem <= s_memory_out when (s_id_rs1Addr = s_mem_dAddr) and (
                    s_mem_controlword.MEM_READ = '1') else
                    s_mem_aluOut;
 
-  s_bp_rs2_mem <= s_wb_memory_out when (s_id_rs2Addr = s_mem_dAddr) and (
+  s_bp_rs2_mem <= s_memory_out when (s_id_rs2Addr = s_mem_dAddr) and (
                   s_mem_controlword.MEM_READ = '1') else
                   s_mem_aluOut;
-
-  BP_RS1_MUX_EX : entity work.gen_mux(behavior)
-    generic map(
-      dataWidth => WORD_WIDTH
-    )
-    port map(
-      pi_in0 => s_ex_aluOP1,
-      pi_in1 => s_ex_aluOut,
-      pi_in2 => s_bp_rs1_mem,
-      pi_in3 => s_wb_writeData,
-      pi_sel => s_ex_bp_rs1_sel,
-      pOut => s_ex_rs1_bp
-    );
-
-  BP_RS2_MUX_EX : entity work.gen_mux(behavior)
-    generic map(
-      dataWidth => WORD_WIDTH
-    )
-    port map(
-      pi_in0 => s_ex_aluOP2,
-      pi_in1 => s_ex_aluOut,
-      pi_in2 => s_bp_rs2_mem,
-      pi_in3 => s_wb_writeData,
-      pi_sel => s_ex_bp_rs2_sel,
-      pOut => s_ex_rs2_bp
-    );
 
   ---********************************************************************
   ---* execute phase
@@ -367,6 +341,19 @@ begin
       pi_rst => pi_rst or s_flush,
       pi_data => s_of_aluOP1,
       po_data => s_ex_aluOP1
+    );
+
+  BP_RS1_MUX_EX : entity work.gen_mux(behavior)
+    generic map(
+      dataWidth => WORD_WIDTH
+    )
+    port map(
+      pi_in0 => s_ex_aluOP1,
+      pi_in1 => s_ex_aluOut,
+      pi_in2 => s_bp_rs1_mem,
+      pi_in3 => s_wb_writeData,
+      pi_sel => s_ex_bp_rs1_sel,
+      pOut => s_ex_rs1_bp
     );
 
   -- ALU OP1 Register / PC multiplexer
@@ -393,6 +380,19 @@ begin
       pi_rst => pi_rst or s_flush,
       pi_data => s_of_aluOP2,
       po_data => s_ex_aluOP2
+    );
+
+  BP_RS2_MUX_EX : entity work.gen_mux(behavior)
+    generic map(
+      dataWidth => WORD_WIDTH
+    )
+    port map(
+      pi_in0 => s_ex_aluOP2,
+      pi_in1 => s_ex_aluOut,
+      pi_in2 => s_bp_rs2_mem,
+      pi_in3 => s_wb_writeData,
+      pi_sel => s_ex_bp_rs2_sel,
+      pOut => s_ex_rs2_bp
     );
 
   -- ALU OP2 Register / Immediate multiplexer  
@@ -541,7 +541,7 @@ begin
       pi_write => s_mem_controlword.MEM_WRITE,
       pi_read => s_mem_controlword.MEM_READ,
       pi_writedata => s_mem_aluOP2,
-      po_readdata => s_wb_memory_out,
+      po_readdata => s_memory_out,
       po_debugdatamemory => po_debugdatamemory
     );
 
@@ -635,7 +635,7 @@ begin
       pi_in0 => s_wb_aluOut,
       pi_in1 => s_wb_immediate,
       pi_in2 => s_wb_pcPlus4,
-      pi_in3 => s_wb_memory_out,
+      pi_in3 => s_memory_out,
       pi_sel => s_wb_controlword.WB_SEL,
       pOut => s_wb_writeData
     );
