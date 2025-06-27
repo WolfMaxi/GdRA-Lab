@@ -66,10 +66,10 @@ architecture structure of riubs_bp_only_RISC_V is
   -- ============ Memory =============
   signal s_mem_aluOP2, s_memory_out : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Write Back ==========
-  signal s_wb_writeData : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_wb_writeData, s_dataWritten : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Forwarding ==========
   signal s_id_bp_rs1_sel, s_id_bp_rs2_sel, s_ex_bp_rs1_sel, s_ex_bp_rs2_sel : std_logic_vector(1 downto 0) := (others => '0');
-  signal s_ex_rs1_bp, s_ex_rs2_bp, s_bp_rs1_mem, s_bp_rs2_mem : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_ex_rs1_bp, s_ex_rs2_bp, s_bp_rs1_mem, s_bp_rs2_mem, s_bp_rs1_wb, s_bp_rs2_wb: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- end solution!!
 begin
   ---********************************************************************
@@ -284,6 +284,7 @@ begin
   ---* Forwarding
   ---********************************************************************
 
+  -- Prioritization
   s_id_bp_rs1_sel <= "01" when (s_id_rs1Addr = s_ex_dAddr) else
                      "10" when (s_id_rs1Addr = s_mem_dAddr) else
                      "11" when (s_id_rs1Addr = s_wb_dAddr) else
@@ -324,6 +325,39 @@ begin
                   s_mem_controlword.MEM_READ = '1') else
                   s_mem_aluOut;
 
+  BP_RS1_MEM_WB : entity work.PipelineRegister(behavior)
+    generic map(
+      registerWidth => WORD_WIDTH
+    )
+    port map(
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_bp_rs1_mem,
+      po_data => s_bp_rs1_wb
+    );
+
+  BP_RS2_MEM_WB : entity work.PipelineRegister(behavior)
+    generic map(
+      registerWidth => WORD_WIDTH
+    )
+    port map(
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_bp_rs2_mem,
+      po_data => s_bp_rs2_wb
+    );
+
+  BP_WB_DATA : entity work.PipelineRegister(behavior)
+    generic map(
+      registerWidth => WORD_WIDTH
+    )
+    port map(
+      pi_clk => pi_clk,
+      pi_rst => pi_rst,
+      pi_data => s_wb_writeData,
+      po_data => s_dataWritten
+    );
+
   ---********************************************************************
   ---* execute phase
   ---********************************************************************
@@ -349,9 +383,9 @@ begin
     )
     port map(
       pi_in0 => s_ex_aluOP1,
-      pi_in1 => s_ex_aluOut,
-      pi_in2 => s_bp_rs1_mem,
-      pi_in3 => s_wb_writeData,
+      pi_in1 => s_mem_aluOut,
+      pi_in2 => s_bp_rs1_wb,
+      pi_in3 => s_dataWritten,
       pi_sel => s_ex_bp_rs1_sel,
       pOut => s_ex_rs1_bp
     );
@@ -388,9 +422,9 @@ begin
     )
     port map(
       pi_in0 => s_ex_aluOP2,
-      pi_in1 => s_ex_aluOut,
-      pi_in2 => s_bp_rs2_mem,
-      pi_in3 => s_wb_writeData,
+      pi_in1 => s_mem_aluOut,
+      pi_in2 => s_bp_rs2_wb,
+      pi_in3 => s_dataWritten,
       pi_sel => s_ex_bp_rs2_sel,
       pOut => s_ex_rs2_bp
     );
