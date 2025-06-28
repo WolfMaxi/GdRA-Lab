@@ -69,7 +69,7 @@ architecture structure of riubs_bp_only_RISC_V is
   signal s_wb_writeData, s_dataWritten : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Forwarding ==========
   signal s_id_bp_rs1_sel, s_id_bp_rs2_sel, s_ex_bp_rs1_sel, s_ex_bp_rs2_sel : std_logic_vector(1 downto 0) := (others => '0');
-  signal s_ex_rs1_bp, s_ex_rs2_bp, s_bp_rs1_mem, s_bp_rs2_mem, s_bp_rs1_wb, s_bp_rs2_wb: std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_ex_rs1_bp, s_ex_rs2_bp, s_bp_rs1_mem, s_bp_rs2_mem, s_bp_rs1_wb, s_bp_rs2_wb : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- end solution!!
 begin
   ---********************************************************************
@@ -317,12 +317,10 @@ begin
       po_data => s_ex_bp_rs2_sel
     );
 
-  s_bp_rs1_mem <= s_memory_out when (s_id_rs1Addr = s_mem_dAddr) and (
-                   s_mem_controlword.MEM_READ = '1') else
-                   s_mem_aluOut;
+  s_bp_rs1_mem <= s_memory_out when (s_mem_controlword.MEM_READ = '1') else
+                  s_mem_aluOut;
 
-  s_bp_rs2_mem <= s_memory_out when (s_id_rs2Addr = s_mem_dAddr) and (
-                  s_mem_controlword.MEM_READ = '1') else
+  s_bp_rs2_mem <= s_memory_out when (s_mem_controlword.MEM_READ = '1') else
                   s_mem_aluOut;
 
   BP_RS1_MEM_WB : entity work.PipelineRegister(behavior)
@@ -331,7 +329,7 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_data => s_bp_rs1_mem,
       po_data => s_bp_rs1_wb
     );
@@ -342,7 +340,7 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_data => s_bp_rs2_mem,
       po_data => s_bp_rs2_wb
     );
@@ -353,7 +351,7 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst,
+      pi_rst => pi_rst or s_flush,
       pi_data => s_wb_writeData,
       po_data => s_dataWritten
     );
@@ -554,7 +552,7 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst,
-      pi_data => s_ex_aluOP2,
+      pi_data => s_ex_rs2_bp,
       po_data => s_mem_aluOP2
     );
 
