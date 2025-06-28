@@ -55,8 +55,8 @@ architecture structure of riubs_bp_only_RISC_V is
   -- ============ Immediate ===========
   signal s_id_immediate, s_ex_immediate, s_mem_immediate, s_wb_immediate : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Execute =============
-  signal s_of_aluOP1, s_of_aluOP2, s_ex_aluOP1, s_ex_aluOP2 : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
-  signal s_ex_aluOP1_sel, s_ex_aluOP2_sel : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_of_rs1, s_of_rs2, s_ex_rs1, s_ex_rs2 : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_ex_rs1_sel, s_ex_rs2_sel : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   signal s_ex_aluOut, s_mem_aluOut, s_wb_aluOut : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Branch =============
   signal s_ex_pc_sel, s_mem_pc_sel, s_ex_zero : std_logic := '0';
@@ -64,12 +64,12 @@ architecture structure of riubs_bp_only_RISC_V is
   signal s_ex_branchAddr, s_mem_branchAddr : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   signal s_flush : std_logic := '0';
   -- ============ Memory =============
-  signal s_mem_aluOP2, s_memory_out : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_mem_rs2, s_memory_out : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Write Back ==========
   signal s_wb_writeData, s_dataWritten : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Forwarding ==========
   signal s_id_bp_rs1_sel, s_id_bp_rs2_sel, s_ex_bp_rs1_sel, s_ex_bp_rs2_sel : std_logic_vector(1 downto 0) := (others => '0');
-  signal s_ex_rs1_bp, s_ex_rs2_bp, s_bp_rs1_mem, s_bp_rs2_mem, s_bp_rs1_wb, s_bp_rs2_wb : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_ex_bp_rs1, s_ex_bp_rs2, s_mem_bp_rs1, s_mem_bp_rs2, s_wb_bp_rs1, s_wb_bp_rs2 : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- end solution!!
 begin
   ---********************************************************************
@@ -295,6 +295,7 @@ begin
                      "11" when (s_id_rs2Addr = s_wb_dAddr) else
                      "00";
 
+  -- Pipeline for forwarding selection (rs1)
   BP_RS1_ID_EX : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => 2
@@ -306,6 +307,7 @@ begin
       po_data => s_ex_bp_rs1_sel
     );
 
+  -- Pipeline for forwarding selection (rs2)
   BP_RS2_ID_EX : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => 2
@@ -317,12 +319,14 @@ begin
       po_data => s_ex_bp_rs2_sel
     );
 
-  s_bp_rs1_mem <= s_memory_out when (s_mem_controlword.MEM_READ = '1') else
+  -- Forwarding for data memory
+  s_mem_bp_rs1 <= s_memory_out when (s_mem_controlword.MEM_READ = '1') else
                   s_mem_aluOut;
 
-  s_bp_rs2_mem <= s_memory_out when (s_mem_controlword.MEM_READ = '1') else
+  s_mem_bp_rs2 <= s_memory_out when (s_mem_controlword.MEM_READ = '1') else
                   s_mem_aluOut;
 
+  -- Forwarding for each phase
   BP_RS1_MEM_WB : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -330,8 +334,8 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst or s_flush,
-      pi_data => s_bp_rs1_mem,
-      po_data => s_bp_rs1_wb
+      pi_data => s_mem_bp_rs1,
+      po_data => s_wb_bp_rs1
     );
 
   BP_RS2_MEM_WB : entity work.PipelineRegister(behavior)
@@ -341,8 +345,8 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst or s_flush,
-      pi_data => s_bp_rs2_mem,
-      po_data => s_bp_rs2_wb
+      pi_data => s_mem_bp_rs2,
+      po_data => s_wb_bp_rs2
     );
 
   BP_WB_DATA : entity work.PipelineRegister(behavior)
@@ -371,8 +375,8 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst or s_flush,
-      pi_data => s_of_aluOP1,
-      po_data => s_ex_aluOP1
+      pi_data => s_of_rs1,
+      po_data => s_ex_rs1
     );
 
   BP_RS1_MUX_EX : entity work.gen_mux(behavior)
@@ -380,12 +384,12 @@ begin
       dataWidth => WORD_WIDTH
     )
     port map(
-      pi_in0 => s_ex_aluOP1,
+      pi_in0 => s_ex_rs1,
       pi_in1 => s_mem_aluOut,
-      pi_in2 => s_bp_rs1_wb,
+      pi_in2 => s_wb_bp_rs1,
       pi_in3 => s_dataWritten,
       pi_sel => s_ex_bp_rs1_sel,
-      pOut => s_ex_rs1_bp
+      pOut => s_ex_bp_rs1
     );
 
   -- ALU OP1 Register / PC multiplexer
@@ -394,10 +398,10 @@ begin
       dataWidth => WORD_WIDTH
     )
     port map(
-      pi_first => s_ex_rs1_bp, -- Register
+      pi_first => s_ex_bp_rs1, -- Register
       pi_second => s_ex_pc, -- Program counter
       pi_sel => s_ex_controlword.A_SEL, -- Select between Register / PC
-      pOut => s_ex_aluOP1_sel
+      pOut => s_ex_rs1_sel
     );
 
   -- ==== ALU OP2 ====
@@ -410,8 +414,8 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst or s_flush,
-      pi_data => s_of_aluOP2,
-      po_data => s_ex_aluOP2
+      pi_data => s_of_rs2,
+      po_data => s_ex_rs2
     );
 
   BP_RS2_MUX_EX : entity work.gen_mux(behavior)
@@ -419,12 +423,12 @@ begin
       dataWidth => WORD_WIDTH
     )
     port map(
-      pi_in0 => s_ex_aluOP2,
+      pi_in0 => s_ex_rs2,
       pi_in1 => s_mem_aluOut,
-      pi_in2 => s_bp_rs2_wb,
+      pi_in2 => s_wb_bp_rs2,
       pi_in3 => s_dataWritten,
       pi_sel => s_ex_bp_rs2_sel,
-      pOut => s_ex_rs2_bp
+      pOut => s_ex_bp_rs2
     );
 
   -- ALU OP2 Register / Immediate multiplexer  
@@ -433,10 +437,10 @@ begin
       dataWidth => WORD_WIDTH
     )
     port map(
-      pi_first => s_ex_rs2_bp, -- Register value
+      pi_first => s_ex_bp_rs2, -- Register value
       pi_second => s_ex_immediate, -- Immediate value
       pi_sel => s_ex_controlword.I_IMM_SEL, -- Select between register or immediate
-      pOut => s_ex_aluOP2_sel
+      pOut => s_ex_rs2_sel
     );
 
   ALU : entity work.my_alu(behavior)
@@ -445,8 +449,8 @@ begin
       G_OP_WIDTH => ALU_OPCODE_WIDTH
     )
     port map(
-      pi_OP1 => s_ex_aluOP1_sel,
-      pi_OP2 => s_ex_aluOP2_sel,
+      pi_OP1 => s_ex_rs1_sel,
+      pi_OP2 => s_ex_rs2_sel,
       pi_aluOP => s_ex_controlword.ALU_OP,
       po_aluOut => s_ex_aluOut,
       po_carryOut => open,
@@ -545,6 +549,13 @@ begin
       po_data => s_mem_branchAddr
     );
 
+  -- end solution!!
+  ---********************************************************************
+  ---* memory phase
+  ---********************************************************************
+  -- begin solution:
+
+  -- Pipeline register for Memory data
   EX_MEM_OP2 : entity work.PipelineRegister(behavior)
     generic map(
       registerWidth => WORD_WIDTH
@@ -552,15 +563,10 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst,
-      pi_data => s_ex_rs2_bp,
-      po_data => s_mem_aluOP2
+      pi_data => s_ex_bp_rs2,
+      po_data => s_mem_rs2
     );
 
-  -- end solution!!
-  ---********************************************************************
-  ---* memory phase
-  ---********************************************************************
-  -- begin solution:
   DATA_MEMORY : entity work.data_memory(behavior)
     generic map(
       adr_width => ADR_WIDTH
@@ -572,7 +578,7 @@ begin
       pi_ctrmem => s_mem_controlword.MEM_CTR,
       pi_write => s_mem_controlword.MEM_WRITE,
       pi_read => s_mem_controlword.MEM_READ,
-      pi_writedata => s_mem_aluOP2,
+      pi_writedata => s_mem_rs2,
       po_readdata => s_memory_out,
       po_debugdatamemory => po_debugdatamemory
     );
@@ -691,8 +697,8 @@ begin
       pi_writeRegAddr => s_wb_dAddr,
       pi_writeRegData => s_wb_writeData,
       pi_writeEnable => s_wb_controlword.REG_WRITE,
-      po_readRegData1 => s_of_aluOP1,
-      po_readRegData2 => s_of_aluOP2,
+      po_readRegData1 => s_of_rs1,
+      po_readRegData2 => s_of_rs2,
       po_registerOut => po_registersOut
     );
 

@@ -195,7 +195,7 @@ if v_test = 9 then
   mem(2)  := Asm2Std("ADDI", 2, 0, 42);   -- x2 = 42
   mem(3)  := Asm2Std("ADDI", 3, 0, -1);   -- x3 = -1
 
-  mem(4)  := Asm2Std("SW", 1, 2, 0);      -- Mem[100] = x2
+  mem(4)  := Asm2Std("SW", 1, 2, 0);      -- Mems_mem_aluOP2[100] = x2
 
   mem(5)  := Asm2Std("LW", 4, 1, 0);      -- x4 = Mem[100]
   mem(6)  := Asm2Std("ADDI", 0, 0, 0);    -- NOP
