@@ -37,8 +37,7 @@ entity riubs_bp_only_RISC_V is
 end entity riubs_bp_only_RISC_V;
 
 architecture structure of riubs_bp_only_RISC_V is
-  constant PERIOD : time := 10 ns;
-  constant ADD_FOUR_TO_ADDRESS : std_logic_vector(WORD_WIDTH - 1 downto 0) := std_logic_vector(to_signed((4), WORD_WIDTH));
+  constant CONST_FOUR : std_logic_vector(WORD_WIDTH - 1 downto 0) := std_logic_vector(to_signed((4), WORD_WIDTH));
 
   -- signals
   -- begin solution:
@@ -66,10 +65,12 @@ architecture structure of riubs_bp_only_RISC_V is
   -- ============ Memory =============
   signal s_mem_rs2, s_memory_out : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Write Back ==========
-  signal s_wb_writeData, s_dataWritten : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_wb_writeData : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
   -- ============ Forwarding ==========
-  signal s_id_bp_rs1_sel, s_id_bp_rs2_sel, s_ex_bp_rs1_sel, s_ex_bp_rs2_sel : std_logic_vector(1 downto 0) := (others => '0');
-  signal s_ex_bp_rs1, s_ex_bp_rs2, s_mem_bp_rs1, s_mem_bp_rs2, s_wb_bp_rs1, s_wb_bp_rs2 : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  signal s_id_bp_rs1_sel, s_id_bp_rs2_sel : std_logic_vector(1 downto 0) := (others => '0');
+  signal s_of_bp_rs1, s_of_bp_rs2, s_mem_bp_rs1, s_mem_bp_rs2 : std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0');
+  -- ============ Stalling ==========
+  signal s_load_use_hazard, s_stall : std_logic := '0';
   -- end solution!!
 begin
   ---********************************************************************
@@ -83,7 +84,7 @@ begin
       G_DATA_WIDTH => WORD_WIDTH
     )
     port map(
-      pi_a => ADD_FOUR_TO_ADDRESS,
+      pi_a => CONST_FOUR,
       pi_b => s_pc_currentAddr,
       pi_carryIn => '0',
       po_sum => s_pc_newAddr,
@@ -122,6 +123,7 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst,
+      pi_enable => not s_stall,
       pi_data => s_pc_newAddr_sel,
       po_data => s_pc_currentAddr
     );
@@ -153,6 +155,7 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst or s_flush,
+      pi_enable => not s_stall,
       pi_data => s_newInst,
       po_data => s_currentInst
     );
@@ -170,7 +173,8 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst or s_flush,
+      pi_rst => pi_rst,
+      pi_enable => not s_stall,
       pi_data => s_pc_currentAddr,
       po_data => s_id_pc
     );
@@ -224,7 +228,7 @@ begin
   -- Controlword ID->EX pipelining
   ID_EX_CONTROLWORD : entity work.ControlWordRegister(arc1)
     port map(
-      pi_rst => pi_rst or s_flush,
+      pi_rst => pi_rst or s_flush or s_stall,
       pi_clk => pi_clk,
       pi_controlWord => s_id_controlword,
       po_controlWord => s_ex_controlword
@@ -237,7 +241,7 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst or s_flush,
+      pi_rst => pi_rst or s_flush or s_stall,
       pi_data => s_id_dAddr,
       po_data => s_ex_dAddr
     );
@@ -249,7 +253,7 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst or s_flush,
+      pi_rst => pi_rst or s_flush or s_stall,
       pi_data => s_id_immediate,
       po_data => s_ex_immediate
     );
@@ -261,7 +265,7 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst or s_flush,
+      pi_rst => pi_rst or s_flush or s_stall,
       pi_data => s_id_pc,
       po_data => s_ex_pc
     );
@@ -272,100 +276,12 @@ begin
       G_DATA_WIDTH => WORD_WIDTH
     )
     port map(
-      pi_a => ADD_FOUR_TO_ADDRESS,
+      pi_a => CONST_FOUR,
       pi_b => s_ex_pc,
       pi_carryIn => '0',
       po_sum => s_ex_pcPlus4,
       po_carryOut => open
     );
-
-  -- end solution!!
-  ---********************************************************************
-  ---* Forwarding
-  ---********************************************************************
-
-  -- Prioritization
-  s_id_bp_rs1_sel <= "01" when (s_id_rs1Addr = s_ex_dAddr) else
-                     "10" when (s_id_rs1Addr = s_mem_dAddr) else
-                     "11" when (s_id_rs1Addr = s_wb_dAddr) else
-                     "00";
-
-  s_id_bp_rs2_sel <= "01" when (s_id_rs2Addr = s_ex_dAddr) else
-                     "10" when (s_id_rs2Addr = s_mem_dAddr) else
-                     "11" when (s_id_rs2Addr = s_wb_dAddr) else
-                     "00";
-
-  -- Pipeline for forwarding selection (rs1)
-  BP_RS1_ID_EX : entity work.PipelineRegister(behavior)
-    generic map(
-      registerWidth => 2
-    )
-    port map(
-      pi_clk => pi_clk,
-      pi_rst => pi_rst or s_flush,
-      pi_data => s_id_bp_rs1_sel,
-      po_data => s_ex_bp_rs1_sel
-    );
-
-  -- Pipeline for forwarding selection (rs2)
-  BP_RS2_ID_EX : entity work.PipelineRegister(behavior)
-    generic map(
-      registerWidth => 2
-    )
-    port map(
-      pi_clk => pi_clk,
-      pi_rst => pi_rst or s_flush,
-      pi_data => s_id_bp_rs2_sel,
-      po_data => s_ex_bp_rs2_sel
-    );
-
-  -- Forwarding for data memory
-  s_mem_bp_rs1 <= s_memory_out when (s_mem_controlword.MEM_READ = '1') else
-                  s_mem_aluOut;
-
-  s_mem_bp_rs2 <= s_memory_out when (s_mem_controlword.MEM_READ = '1') else
-                  s_mem_aluOut;
-
-  -- Forwarding for each phase
-  BP_RS1_MEM_WB : entity work.PipelineRegister(behavior)
-    generic map(
-      registerWidth => WORD_WIDTH
-    )
-    port map(
-      pi_clk => pi_clk,
-      pi_rst => pi_rst or s_flush,
-      pi_data => s_mem_bp_rs1,
-      po_data => s_wb_bp_rs1
-    );
-
-  BP_RS2_MEM_WB : entity work.PipelineRegister(behavior)
-    generic map(
-      registerWidth => WORD_WIDTH
-    )
-    port map(
-      pi_clk => pi_clk,
-      pi_rst => pi_rst or s_flush,
-      pi_data => s_mem_bp_rs2,
-      po_data => s_wb_bp_rs2
-    );
-
-  BP_WB_DATA : entity work.PipelineRegister(behavior)
-    generic map(
-      registerWidth => WORD_WIDTH
-    )
-    port map(
-      pi_clk => pi_clk,
-      pi_rst => pi_rst or s_flush,
-      pi_data => s_wb_writeData,
-      po_data => s_dataWritten
-    );
-
-  ---********************************************************************
-  ---* execute phase
-  ---********************************************************************
-  -- begin solution:
-
-  -- ==== ALU OP1 ====
 
   -- ALU OP1 OF->EX pipelining
   OP1_REGISTER : entity work.PipelineRegister(behavior)
@@ -374,37 +290,10 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst or s_flush,
-      pi_data => s_of_rs1,
+      pi_rst => pi_rst or s_flush or s_stall,
+      pi_data => s_of_bp_rs1,
       po_data => s_ex_rs1
     );
-
-  BP_RS1_MUX_EX : entity work.gen_mux(behavior)
-    generic map(
-      dataWidth => WORD_WIDTH
-    )
-    port map(
-      pi_in0 => s_ex_rs1,
-      pi_in1 => s_mem_aluOut,
-      pi_in2 => s_wb_bp_rs1,
-      pi_in3 => s_dataWritten,
-      pi_sel => s_ex_bp_rs1_sel,
-      pOut => s_ex_bp_rs1
-    );
-
-  -- ALU OP1 Register / PC multiplexer
-  OP1_SEL : entity work.gen_mux2to1(behavior)
-    generic map(
-      dataWidth => WORD_WIDTH
-    )
-    port map(
-      pi_first => s_ex_bp_rs1, -- Register
-      pi_second => s_ex_pc, -- Program counter
-      pi_sel => s_ex_controlword.A_SEL, -- Select between Register / PC
-      pOut => s_ex_rs1_sel
-    );
-
-  -- ==== ALU OP2 ====
 
   -- ALU OP2 OF->EX pipelining
   OP2_REGISTER : entity work.PipelineRegister(behavior)
@@ -413,22 +302,103 @@ begin
     )
     port map(
       pi_clk => pi_clk,
-      pi_rst => pi_rst or s_flush,
-      pi_data => s_of_rs2,
+      pi_rst => pi_rst or s_flush or s_stall,
+      pi_data => s_of_bp_rs2,
       po_data => s_ex_rs2
     );
 
-  BP_RS2_MUX_EX : entity work.gen_mux(behavior)
+  -- end solution!!
+  ---********************************************************************
+  ---* Forwarding
+  ---********************************************************************
+
+  -- Prioritization
+  s_id_bp_rs1_sel <= "00" when s_load_use_hazard = '1' else
+                     "01" when (s_id_rs1Addr = s_ex_dAddr) and (s_ex_dAddr /= "00000") else
+                     "10" when (s_id_rs1Addr = s_mem_dAddr) and (s_mem_dAddr /= "00000") else
+                     "11" when (s_id_rs1Addr = s_wb_dAddr) and (s_wb_dAddr /= "00000") else
+                     "00";
+
+  s_id_bp_rs2_sel <= "00" when s_load_use_hazard = '1' else
+                     "01" when (s_id_rs2Addr = s_ex_dAddr) and (s_ex_dAddr /= "00000") else
+                     "10" when (s_id_rs2Addr = s_mem_dAddr) and (s_mem_dAddr /= "00000") else
+                     "11" when (s_id_rs2Addr = s_wb_dAddr) and (s_wb_dAddr /= "00000") else
+                     "00";
+
+  -- Forwarding for data memory
+  s_mem_bp_rs1 <= s_memory_out when (s_mem_controlword.MEM_READ = '1') else
+                  s_mem_aluOut;
+
+  s_mem_bp_rs2 <= s_memory_out when (s_mem_controlword.MEM_READ = '1') else
+                  s_mem_aluOut;
+
+
+  ---********************************************************************
+  ---* Stalling
+  ---********************************************************************
+
+  s_load_use_hazard <= '1' when
+             (s_ex_controlword.MEM_READ = '1') and
+             ((s_ex_dAddr /= "00000") and
+             ((s_ex_dAddr = s_id_rs1Addr) or
+             (s_ex_dAddr = s_id_rs2Addr)))
+             else
+             '0';
+
+  process (pi_clk, pi_rst)
+  begin
+    if (pi_rst) then
+      s_stall <= '0';
+    elsif rising_edge (pi_clk) then
+      s_stall <= s_load_use_hazard;
+    end if;
+  end process;
+
+  ---********************************************************************
+  ---* execute phase
+  ---********************************************************************
+  -- begin solution:
+
+  -- ==== ALU OP1 ====
+
+  BP_RS1_MUX_OF : entity work.gen_mux(behavior)
     generic map(
       dataWidth => WORD_WIDTH
     )
     port map(
-      pi_in0 => s_ex_rs2,
-      pi_in1 => s_mem_aluOut,
-      pi_in2 => s_wb_bp_rs2,
-      pi_in3 => s_dataWritten,
-      pi_sel => s_ex_bp_rs2_sel,
-      pOut => s_ex_bp_rs2
+      pi_in0 => s_of_rs1,
+      pi_in1 => s_ex_aluOut,
+      pi_in2 => s_mem_bp_rs1,
+      pi_in3 => s_wb_writeData,
+      pi_sel => s_id_bp_rs1_sel,
+      pOut => s_of_bp_rs1
+    );
+
+  -- ALU OP1 Register / PC multiplexer
+  OP1_SEL : entity work.gen_mux2to1(behavior)
+    generic map(
+      dataWidth => WORD_WIDTH
+    )
+    port map(
+      pi_first => s_ex_rs1, -- Register
+      pi_second => s_ex_pc, -- Program counter
+      pi_sel => s_ex_controlword.A_SEL, -- Select between Register / PC
+      pOut => s_ex_rs1_sel
+    );
+
+  -- ==== ALU OP2 ====
+
+  BP_RS2_MUX_OF : entity work.gen_mux(behavior)
+    generic map(
+      dataWidth => WORD_WIDTH
+    )
+    port map(
+      pi_in0 => s_of_rs2,
+      pi_in1 => s_ex_aluOut,
+      pi_in2 => s_mem_bp_rs2,
+      pi_in3 => s_wb_writeData,
+      pi_sel => s_id_bp_rs2_sel,
+      pOut => s_of_bp_rs2
     );
 
   -- ALU OP2 Register / Immediate multiplexer  
@@ -437,7 +407,7 @@ begin
       dataWidth => WORD_WIDTH
     )
     port map(
-      pi_first => s_ex_bp_rs2, -- Register value
+      pi_first => s_ex_rs2, -- Register value
       pi_second => s_ex_immediate, -- Immediate value
       pi_sel => s_ex_controlword.I_IMM_SEL, -- Select between register or immediate
       pOut => s_ex_rs2_sel
@@ -563,7 +533,7 @@ begin
     port map(
       pi_clk => pi_clk,
       pi_rst => pi_rst,
-      pi_data => s_ex_bp_rs2,
+      pi_data => s_ex_rs2,
       po_data => s_mem_rs2
     );
 
