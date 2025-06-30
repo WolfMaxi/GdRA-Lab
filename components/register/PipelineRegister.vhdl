@@ -22,7 +22,7 @@ entity PipelineRegister is
         registerWidth : integer := DATA_WIDTH_GEN
     );
     port (
-        pi_clk, pi_rst : in STD_LOGIC := '0';
+        pi_clk, pi_rst, pi_flush : in STD_LOGIC := '0';
         pi_enable: in STD_LOGIC := '1';
         pi_data: in STD_LOGIC_VECTOR(registerWidth - 1 downto 0) := (others => '0');
         po_data: out STD_LOGIC_VECTOR(registerWidth - 1 downto 0) := (others => '0')
@@ -36,7 +36,9 @@ begin
     	if pi_rst then
 	        po_data <= (others => '0');
 	    elsif rising_edge(pi_clk) then
-            if pi_enable then
+            if pi_flush then
+                po_data <= (others => '0');
+            elsif pi_enable then
                 po_data <= pi_data;
             end if;
         end if;
