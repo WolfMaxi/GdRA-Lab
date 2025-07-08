@@ -32,7 +32,7 @@ entity riubs_bp_only_RISC_V is
     pi_clk : in std_logic;
     pi_instruction : in memory := (others => (others => '0'));
     po_registersOut : out registerMemory := (others => (others => '0'));
-    po_debugdatamemory : out memory := (others => (others => '0'))
+    po_currentInst : out std_logic_vector(WORD_WIDTH - 1 downto 0) := (others => '0')
   );
 end entity riubs_bp_only_RISC_V;
 
@@ -165,7 +165,8 @@ begin
       pi_data => s_newInst,
       po_data => s_currentInst
     );
-
+	po_currentInst <= s_currentInst;
+	 
   -- PC IF->ID pipeline
   PC_IF_ID : entity work.PipelineRegister(behavior)
     generic map(
@@ -559,7 +560,7 @@ begin
       pi_read => s_mem_controlword.MEM_READ,
       pi_writedata => s_mem_rs2,
       po_readdata => s_memory_out,
-      po_debugdatamemory => po_debugdatamemory
+      po_debugdatamemory => open
     );
 
   -- end solution!!

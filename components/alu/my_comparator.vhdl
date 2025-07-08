@@ -35,9 +35,17 @@ begin
     process (pi_op1, pi_op2, pi_isSigned)
     begin
         if (pi_isSigned) then 
-            po_out <= std_logic_vector(to_unsigned(1, G_DATA_WIDTH)) when signed(pi_op1) < signed(pi_op2) else std_logic_vector(to_unsigned(0, G_DATA_WIDTH));
+				if (signed(pi_op1) < signed(pi_op2)) then
+					po_out <= std_logic_vector(to_unsigned(1, G_DATA_WIDTH));
+				else
+					po_out <= std_logic_vector(to_unsigned(0, G_DATA_WIDTH));
+				end if;
         else
-            po_out <= std_logic_vector(to_unsigned(1, G_DATA_WIDTH)) when unsigned(pi_op1) < unsigned(pi_op2) else std_logic_vector(to_unsigned(0, G_DATA_WIDTH));
+				if (unsigned(pi_op1) < unsigned(pi_op2)) then
+					po_out <= std_logic_vector(to_unsigned(1, G_DATA_WIDTH));
+				else
+					po_out <= std_logic_vector(to_unsigned(0, G_DATA_WIDTH));
+				end if;
         end if;
     end process;
 end behavior;

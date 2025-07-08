@@ -36,7 +36,7 @@ architecture behavior of register_file is
     signal s_read2 : std_logic_vector(word_width - 1 downto 0) := (others => '0');
 
 begin
-    process (pi_clk)
+    process (pi_clk, pi_rst)
     begin
         if pi_rst = '1' then -- Reset signal
             s_array <= (others => (others => '0'));
